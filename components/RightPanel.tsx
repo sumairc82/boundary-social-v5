@@ -5,7 +5,7 @@ import { PALETTES } from '@/lib/palettes';
 import { BG_STYLES } from '@/lib/bgStyles';
 import { Download } from 'lucide-react';
 
-const C = { panelBg:'#111318', border:'#1e2233', activeBg:'#fbbf24', activeColor:'#0a0a00', btnBg:'#161a26', btnBorder:'#252d42', btnColor:'#6b7494', title:'#3d4766', textSec:'#8b93a9' };
+const C = { panelBg:'#16181f', border:'#272b3a', activeBg:'#fbbf24', activeColor:'#0a0a00', btnBg:'#1e2130', btnBorder:'#2e3348', btnColor:'#7c87a6', title:'#5a6585', textSec:'#9099b5' };
 
 interface Props { state: AppState; onChange: (p: Partial<AppState>) => void; onExport: (q: number) => void; exporting: boolean; }
 
@@ -21,7 +21,7 @@ export default function RightPanel({ state, onChange, onExport, exporting }: Pro
   const sectionTitle: React.CSSProperties = { fontSize:9, color:C.title, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 };
 
   return (
-    <div style={{ width:190, flexShrink:0, background:C.panelBg, borderLeft:`1px solid ${C.border}`, overflowY:'auto', padding:14, display:'flex', flexDirection:'column', gap:16 }}>
+    <div style={{ width:210, flexShrink:0, background:C.panelBg, borderLeft:`1px solid ${C.border}`, overflowY:'auto', padding:14, display:'flex', flexDirection:'column', gap:16 }}>
 
       {/* Templates */}
       <div>
@@ -83,7 +83,7 @@ export default function RightPanel({ state, onChange, onExport, exporting }: Pro
       <div>
         <div style={sectionTitle}>Export</div>
         <select value={pixelRatio} onChange={e => setPixelRatio(Number(e.target.value))}
-          style={{ width:'100%', background:'#161a26', border:`1px solid #252d42`, borderRadius:6, padding:'7px 9px', fontSize:11, color:'#e2e8f0', outline:'none', cursor:'pointer', fontFamily:'inherit', marginBottom:8 }}>
+          style={{ width:'100%', background:'#1e2130', border:`1px solid #2e3348`, borderRadius:6, padding:'7px 9px', fontSize:11, color:'#e8ecf4', outline:'none', cursor:'pointer', fontFamily:'inherit', marginBottom:8 }}>
           <option value={2}>Standard (2×) ~720px</option>
           <option value={3}>HD (3×) ~1080px</option>
           <option value={4}>Ultra (4×) ~1440px</option>

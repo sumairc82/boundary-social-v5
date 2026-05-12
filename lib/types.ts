@@ -32,7 +32,7 @@ export interface AppState {
   // weekend fixtures
   fixtures: { badge: string; homeTeam: string; awayTeam: string; time: string; date: string; venue: string }[];
   // squad
-  squadPlayers: string[];
+  squadPlayers: { name: string; photoDataUrl: string }[];
   // notice
   noticeText: string;
   // sponsors

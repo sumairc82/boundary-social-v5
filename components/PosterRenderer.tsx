@@ -144,7 +144,7 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
     const players = s.squadPlayers.slice(0, 14).map((p, i) => `
       <div class="row schedule-row">
         <div class="role">${String(i + 1).padStart(2, '0')}</div>
-        <div class="row-main"><div class="row-title">${esc(p)}</div></div>
+        <div class="row-main"><div class="row-title">${esc(typeof p === 'string' ? p : p.name)}</div></div>
       </div>`).join('');
     contentHtml = `${titleBlockHtml}<section class="squad-layout"><div class="squad-grid">${players}</div></section>`;
   }

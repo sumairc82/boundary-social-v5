@@ -12,19 +12,20 @@ interface Props {
 
 // === Colour constants ===
 const C = {
-  panelBg: '#111318',
-  borderColor: '#1e2233',
-  inputBg: '#161a26',
-  inputBorder: '#252d42',
-  labelColor: '#5a6585',
-  sectionTitle: '#3d4766',
-  textPrimary: '#e2e8f0',
-  textSecondary: '#8b93a9',
+  panelBg: '#16181f',
+  borderColor: '#272b3a',
+  inputBg: '#1e2130',
+  inputBorder: '#2e3348',
+  labelColor: '#7c87a6',
+  sectionTitle: '#5a6585',
+  textPrimary: '#e8ecf4',
+  textSecondary: '#9099b5',
   activeBg: '#fbbf24',
   activeColor: '#0a0a00',
-  btnBg: '#161a26',
-  btnBorder: '#252d42',
-  btnColor: '#6b7494',
+  btnBg: '#1e2130',
+  btnBorder: '#2e3348',
+  btnColor: '#7c87a6',
+  subCard: '#12141c',
 };
 
 const S = {
@@ -33,13 +34,14 @@ const S = {
     borderRadius: 6, padding: '7px 10px', fontSize: 12, color: C.textPrimary,
     outline: 'none', fontFamily: 'inherit',
   } as React.CSSProperties,
-  label: { fontSize: 10, color: C.labelColor, fontWeight: 600, display: 'block', marginBottom: 4 } as React.CSSProperties,
+  label: { fontSize: 11, color: C.labelColor, fontWeight: 600, display: 'block', marginBottom: 4 } as React.CSSProperties,
   sectionTitle: {
     fontSize: 9, color: C.sectionTitle, fontWeight: 700,
     textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: 8,
   },
   field: { display: 'flex', flexDirection: 'column' as const, gap: 4 },
-  divider: { height: 1, background: C.borderColor, margin: '4px 0' },
+  divider: { height: 1, background: C.borderColor, margin: '8px 0' },
+  section: { display: 'flex', flexDirection: 'column' as const, gap: 16, padding: '16px 0' },
 };
 
 function Field({ label, value, onChange, placeholder, multiline }: {
@@ -159,12 +161,12 @@ export default function ControlPanel({ state, onChange }: Props) {
     const p = [...state.players]; p[i] = { ...p[i], [k]: v }; onChange({ players: p });
   };
 
-  void bgCat; // used by filter buttons
+  void bgCat;
 
   return (
-    <div style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', height: '100%', background: C.panelBg, borderRight: `1px solid ${C.borderColor}`, overflow: 'hidden' }}>
+    <div style={{ width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', height: '100%', background: C.panelBg, borderRight: `1px solid ${C.borderColor}`, overflow: 'hidden' }}>
       {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${C.borderColor}`, background: '#0d1018', flexShrink: 0 }}>
+      <div style={{ display: 'flex', borderBottom: `1px solid ${C.borderColor}`, background: '#0f1117', flexShrink: 0 }}>
         {TABS.map(({ id, label, Icon }) => (
           <button key={id} onClick={() => setTab(id)} style={{
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -181,7 +183,7 @@ export default function ControlPanel({ state, onChange }: Props) {
       </div>
 
       {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* ─── TEMPLATE TAB ─── */}
         {tab === 'template' && (
@@ -218,7 +220,6 @@ export default function ControlPanel({ state, onChange }: Props) {
           <>
             <div>
               <div style={S.sectionTitle}>Background Style</div>
-              {/* Category filter */}
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 }}>
                 {['all','gradient','stripe','conic','dark','grid'].map(cat => (
                   <button key={cat} onClick={() => setBgCat(cat)} style={{
@@ -230,7 +231,6 @@ export default function ControlPanel({ state, onChange }: Props) {
                   }}>{cat}</button>
                 ))}
               </div>
-              {/* Style swatches */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 4, maxHeight: 320, overflowY: 'auto' }}>
                 {BG_STYLES.map(bg => (
                   <button key={bg.id} onClick={() => onChange({ style: bg.id as AppState['style'] })}
@@ -241,7 +241,6 @@ export default function ControlPanel({ state, onChange }: Props) {
                       transform: state.style === bg.id ? 'scale(1.08)' : 'scale(1)',
                       transition: 'all 0.12s',
                     }}>
-                    {/* render as a mini poster div using V1 CSS classes */}
                     <div className={`poster style-${bg.id} palette-${state.palette}`}
                       style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 2, borderRadius: 0 }}>
                       <span style={{ fontSize: 7, fontWeight: 900, color: 'rgba(255,255,255,0.8)', textShadow: '0 0 3px #000', lineHeight: 1 }}>
@@ -279,7 +278,7 @@ export default function ControlPanel({ state, onChange }: Props) {
                       <div style={{ flex: 1, background: p.blue }} />
                       <div style={{ flex: 1, background: p.gold }} />
                     </div>
-                    <div style={{ background: '#161a26', textAlign: 'center', fontSize: 7.5, color: C.labelColor, padding: '2px 2px 3px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ background: C.subCard, textAlign: 'center', fontSize: 7.5, color: C.labelColor, padding: '2px 2px 3px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {p.name}
                     </div>
                   </button>
@@ -348,7 +347,7 @@ export default function ControlPanel({ state, onChange }: Props) {
                   ))}
                 </div>
                 {[0,1,2,3].map(i => (
-                  <div key={i} style={{ background: '#0d1018', border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                  <div key={i} style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
                     <div style={{ fontSize: 10, color: C.activeBg, fontWeight: 700, marginBottom: 8 }}>Result {i+1}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       <div style={S.field}>
@@ -386,7 +385,7 @@ export default function ControlPanel({ state, onChange }: Props) {
                   ))}
                 </div>
                 {Array.from({length: state.playerCount}).map((_,i) => (
-                  <div key={i} style={{ background: '#0d1018', border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                  <div key={i} style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
                     <div style={{ fontSize: 10, color: C.activeBg, fontWeight: 700, marginBottom: 8 }}>Player {i+1}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       <Field label="Name" value={state.players[i]?.name||''} onChange={v => updatePlayer(i,'name',v)} />
@@ -416,8 +415,44 @@ export default function ControlPanel({ state, onChange }: Props) {
             {state.template === 'weekend' && (
               <div>
                 <div style={S.sectionTitle}>Fixtures (up to 5)</div>
+
+                {/* Import box */}
+                <div style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, color: C.textSecondary, marginBottom: 6 }}>
+                    📋 Paste fixtures (one per line: &quot;Home vs Away · Time · Date&quot;)
+                  </div>
+                  <textarea
+                    placeholder={"Riverside CC vs Valley Hawks · 1:00pm · Sat 17 May\nThornton CC vs Riverside CC · 11:00am · Sun 18 May"}
+                    rows={4}
+                    style={{ ...S.input, resize: 'vertical', minHeight: 80, fontSize: 11, marginBottom: 8 }}
+                    onBlur={e => {
+                      const lines = e.target.value.split('\n').filter(l => l.trim());
+                      if (!lines.length) return;
+                      const parsed = lines.slice(0, 5).map(line => {
+                        const parts = line.split(/[·|,\t]/).map(p => p.trim());
+                        const matchPart = parts[0] || '';
+                        const vsSplit = matchPart.split(/\s+vs\.?\s+/i);
+                        return {
+                          badge: '',
+                          homeTeam: vsSplit[0]?.trim() || matchPart,
+                          awayTeam: vsSplit[1]?.trim() || '',
+                          time: parts[1]?.trim() || '',
+                          date: parts[2]?.trim() || '',
+                          venue: parts[3]?.trim() || '',
+                        };
+                      });
+                      const empty = { badge:'', homeTeam:'', awayTeam:'', time:'', date:'', venue:'' };
+                      const filled = [...parsed, ...Array(5).fill(empty)].slice(0, 5);
+                      onChange({ fixtures: filled });
+                      e.target.value = '';
+                    }}
+                  />
+                  <div style={{ fontSize: 9, color: '#4a5270' }}>Press Tab or click away to import</div>
+                </div>
+
+                {/* Individual fixture editors */}
                 {[0,1,2,3,4].map(i => (
-                  <div key={i} style={{ background: '#0d1018', border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                  <div key={i} style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
                     <div style={{ fontSize: 10, color: C.activeBg, fontWeight: 700, marginBottom: 8 }}>Fixture {i+1}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       <Field label="Badge/XI" value={state.fixtures[i]?.badge||''} onChange={v => updateFixture(i,'badge',v)} placeholder="1st XI" />
@@ -435,14 +470,27 @@ export default function ControlPanel({ state, onChange }: Props) {
             {state.template === 'squad' && (
               <div>
                 <div style={S.sectionTitle}>Squad Players</div>
-                <textarea placeholder="Paste names, one per line" rows={4}
-                  style={{ ...S.input, resize: 'vertical' as const, minHeight: 80, marginBottom: 8 }}
-                  onBlur={e => { const lines = e.target.value.split('\n').filter(l=>l.trim()); if(lines.length) onChange({squadPlayers:lines}); }} />
-                {Array.from({length:12}).map((_,i) => (
-                  <div key={i} style={{ marginBottom: 4 }}>
-                    <input type="text" value={state.squadPlayers[i]||''} placeholder={`Player ${i+1}`}
-                      onChange={e => { const p=[...state.squadPlayers]; p[i]=e.target.value; onChange({squadPlayers:p}); }}
+                {Array.from({length: Math.min(state.squadPlayers.length + 1, 14)}).map((_, i) => (
+                  <div key={i} style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 6 }}>
+                    <div style={{ fontSize: 10, color: C.activeBg, fontWeight: 700, marginBottom: 6 }}>#{i+1}</div>
+                    <input type="text"
+                      value={state.squadPlayers[i]?.name || ''}
+                      placeholder={`Player ${i+1}`}
+                      onChange={e => {
+                        const p = [...state.squadPlayers];
+                        p[i] = { name: e.target.value, photoDataUrl: p[i]?.photoDataUrl || '' };
+                        onChange({ squadPlayers: p });
+                      }}
                       style={S.input} />
+                    <div style={{ marginTop: 6 }}>
+                      <UploadZone label="Photo (optional)"
+                        value={state.squadPlayers[i]?.photoDataUrl || ''}
+                        onChange={v => {
+                          const p = [...state.squadPlayers];
+                          p[i] = { name: p[i]?.name || '', photoDataUrl: v };
+                          onChange({ squadPlayers: p });
+                        }} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -490,7 +538,7 @@ export default function ControlPanel({ state, onChange }: Props) {
           <div>
             <div style={S.sectionTitle}>Sponsors</div>
             {state.sponsors.map((sp, i) => (
-              <div key={i} style={{ background: '#0d1018', border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
+              <div key={i} style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                   <span style={{ fontSize: 10, color: C.activeBg, fontWeight: 700 }}>Sponsor {i+1}</span>
                   <button onClick={() => onChange({ sponsors: state.sponsors.filter((_,j)=>j!==i) })}
