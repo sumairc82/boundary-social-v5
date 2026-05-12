@@ -128,6 +128,7 @@ const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: 'performer', label: 'Performer' },
   { id: 'signing', label: 'Signing' },
   { id: 'weekend', label: 'Weekend' },
+  { id: 'monthly', label: 'Monthly' },
   { id: 'squad', label: 'Squad' },
   { id: 'notice', label: 'Notice' },
   { id: 'sponsor', label: 'Sponsor' },
@@ -164,7 +165,7 @@ export default function ControlPanel({ state, onChange }: Props) {
   void bgCat;
 
   return (
-    <div style={{ width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', height: '100%', background: C.panelBg, borderRight: `1px solid ${C.borderColor}`, overflow: 'hidden' }}>
+    <div style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', height: '100%', background: C.panelBg, borderRight: `1px solid ${C.borderColor}`, overflow: 'hidden', overflowX: 'hidden' }}>
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: `1px solid ${C.borderColor}`, background: '#0f1117', flexShrink: 0 }}>
         {TABS.map(({ id, label, Icon }) => (
@@ -210,6 +211,12 @@ export default function ControlPanel({ state, onChange }: Props) {
                 <Field label="Club Name" value={state.clubName} onChange={v => onChange({ clubName: v })} placeholder="Your Club CC" />
                 <Field label="Tagline" value={state.clubTagline} onChange={v => onChange({ clubTagline: v })} placeholder="Est. 1892 · County League" />
                 <UploadZone label="Club Logo" value={state.logoDataUrl} onChange={v => onChange({ logoDataUrl: v })} />
+                {state.logoDataUrl && (
+                  <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', marginTop:4 }}>
+                    <input type="checkbox" checked={state.logoNoBg||false} onChange={e => onChange({logoNoBg:e.target.checked})} />
+                    <span style={{ fontSize:11, color:'#9099b5' }}>Transparent logo background</span>
+                  </label>
+                )}
               </div>
             </div>
           </>
@@ -466,6 +473,25 @@ export default function ControlPanel({ state, onChange }: Props) {
               </div>
             )}
 
+            {/* monthly */}
+            {state.template === 'monthly' && (
+              <div>
+                <div style={S.sectionTitle}>Monthly Fixtures (all 5)</div>
+                {[0,1,2,3,4].map(i => (
+                  <div key={i} style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                    <div style={{ fontSize: 10, color: C.activeBg, fontWeight: 700, marginBottom: 8 }}>Fixture {i+1}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <Field label="Badge/XI" value={state.fixtures[i]?.badge||''} onChange={v => updateFixture(i,'badge',v)} placeholder="1st XI" />
+                      <Field label="Home Team" value={state.fixtures[i]?.homeTeam||''} onChange={v => updateFixture(i,'homeTeam',v)} />
+                      <Field label="Away Team" value={state.fixtures[i]?.awayTeam||''} onChange={v => updateFixture(i,'awayTeam',v)} />
+                      <Field label="Time" value={state.fixtures[i]?.time||''} onChange={v => updateFixture(i,'time',v)} placeholder="1:00pm" />
+                      <Field label="Date" value={state.fixtures[i]?.date||''} onChange={v => updateFixture(i,'date',v)} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* squad */}
             {state.template === 'squad' && (
               <div>
@@ -509,27 +535,46 @@ export default function ControlPanel({ state, onChange }: Props) {
         {/* ─── ADJUST TAB ─── */}
         {tab === 'adjust' && (
           <>
+            <div style={{ fontSize:10, color:'#5a6585', marginBottom:4 }}>
+              Showing controls for: <span style={{ color:'#fbbf24' }}>{state.template}</span>
+            </div>
             <div style={S.sectionTitle}>Text Sizes</div>
             <SliderField label="Title Scale" value={state.titleScale} min={50} max={200} onChange={v => onChange({titleScale:v})} />
-            <SliderField label="Fixture Scale" value={state.fixtureScale} min={50} max={200} onChange={v => onChange({fixtureScale:v})} />
             <SliderField label="Meta Scale" value={state.metaScale} min={50} max={200} onChange={v => onChange({metaScale:v})} />
-            <SliderField label="Badge Scale" value={state.badgeScale} min={50} max={200} onChange={v => onChange({badgeScale:v})} />
-            <SliderField label="Sponsor Scale" value={state.sponsorScale} min={35} max={200} onChange={v => onChange({sponsorScale:v})} />
-            <SliderField label="Logo Scale" value={state.logoScale} min={20} max={200} onChange={v => onChange({logoScale:v})} />
+            {(['matchday','results','weekend','squad','custom','monthly'] as AppState['template'][]).includes(state.template) && (
+              <SliderField label="Fixture Scale" value={state.fixtureScale} min={50} max={200} onChange={v => onChange({fixtureScale:v})} />
+            )}
+            {(['matchday','results','weekend','squad','custom','monthly'] as AppState['template'][]).includes(state.template) && (
+              <SliderField label="Badge Scale" value={state.badgeScale} min={50} max={200} onChange={v => onChange({badgeScale:v})} />
+            )}
+            {state.sponsors.length > 0 && (
+              <SliderField label="Sponsor Scale" value={state.sponsorScale} min={35} max={200} onChange={v => onChange({sponsorScale:v})} />
+            )}
+            {state.logoDataUrl && (
+              <SliderField label="Logo Scale" value={state.logoScale} min={20} max={200} onChange={v => onChange({logoScale:v})} />
+            )}
             <div style={S.divider} />
             <div style={S.sectionTitle}>Spacing</div>
             <SliderField label="Top Spacing" value={state.topSpacing} min={0} max={34} onChange={v => onChange({topSpacing:v})} />
-            <div style={S.divider} />
-            <div style={S.sectionTitle}>Background Photo</div>
-            <SliderField label="Opacity" value={state.bgOpacity} min={0} max={100} onChange={v => onChange({bgOpacity:v})} />
-            <SliderField label="Size" value={state.bgSize} min={10} max={300} onChange={v => onChange({bgSize:v})} />
-            <SliderField label="Position X" value={state.bgPosX} min={0} max={100} onChange={v => onChange({bgPosX:v})} />
-            <SliderField label="Position Y" value={state.bgPosY} min={0} max={100} onChange={v => onChange({bgPosY:v})} />
-            <div style={S.divider} />
-            <div style={S.sectionTitle}>Photo Filters</div>
-            <SliderField label="Brightness" value={state.mediaBrightness} min={80} max={200} onChange={v => onChange({mediaBrightness:v})} />
-            <SliderField label="Contrast" value={state.mediaContrast} min={80} max={200} onChange={v => onChange({mediaContrast:v})} />
-            <SliderField label="Vibrance" value={state.mediaSaturate} min={80} max={200} onChange={v => onChange({mediaSaturate:v})} />
+            {state.bgImageDataUrl && (
+              <>
+                <div style={S.divider} />
+                <div style={S.sectionTitle}>Background Photo</div>
+                <SliderField label="Opacity" value={state.bgOpacity} min={0} max={100} onChange={v => onChange({bgOpacity:v})} />
+                <SliderField label="Size" value={state.bgSize} min={10} max={300} onChange={v => onChange({bgSize:v})} />
+                <SliderField label="Position X" value={state.bgPosX} min={0} max={100} onChange={v => onChange({bgPosX:v})} />
+                <SliderField label="Position Y" value={state.bgPosY} min={0} max={100} onChange={v => onChange({bgPosY:v})} />
+              </>
+            )}
+            {(state.bgImageDataUrl || state.players.some(p => p.photoDataUrl) || state.signingPhotoDataUrl) && (
+              <>
+                <div style={S.divider} />
+                <div style={S.sectionTitle}>Photo Filters</div>
+                <SliderField label="Brightness" value={state.mediaBrightness} min={80} max={200} onChange={v => onChange({mediaBrightness:v})} />
+                <SliderField label="Contrast" value={state.mediaContrast} min={80} max={200} onChange={v => onChange({mediaContrast:v})} />
+                <SliderField label="Vibrance" value={state.mediaSaturate} min={80} max={200} onChange={v => onChange({mediaSaturate:v})} />
+              </>
+            )}
           </>
         )}
 
@@ -537,6 +582,48 @@ export default function ControlPanel({ state, onChange }: Props) {
         {tab === 'sponsors' && (
           <div>
             <div style={S.sectionTitle}>Sponsors</div>
+
+            {/* Layout controls */}
+            <div style={S.field}>
+              <label style={S.label}>Layout</label>
+              <select value={state.sponsorLayout} onChange={e => onChange({sponsorLayout: e.target.value as AppState['sponsorLayout']})} style={S.input}>
+                <option value="featured">Featured (main + partners)</option>
+                <option value="compact">Compact (all equal)</option>
+                <option value="row">Row</option>
+                <option value="centred">Centred</option>
+              </select>
+            </div>
+            <div style={{ ...S.field, marginTop: 8 }}>
+              <label style={S.label}>Max shown</label>
+              <select value={state.sponsorCount} onChange={e => onChange({sponsorCount: e.target.value})} style={S.input}>
+                <option value="all">All</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', marginTop:8, marginBottom:12 }}>
+              <input type="checkbox" checked={state.sponsorNoBg||false} onChange={e => onChange({sponsorNoBg:e.target.checked})} />
+              <span style={{ fontSize:11, color:'#9099b5' }}>Transparent sponsor tiles</span>
+            </label>
+
+            {/* Bulk paste */}
+            <div style={{ background:'#12141c', border:'1px solid #272b3a', borderRadius:8, padding:10, marginBottom:12 }}>
+              <div style={{ fontSize:10, color:'#9099b5', marginBottom:6 }}>Bulk add sponsors (one name per line)</div>
+              <textarea placeholder={"Main Sponsor Ltd\nKit Partner Co\nLocal Business"} rows={3}
+                style={{ ...S.input, resize:'vertical', minHeight:64, marginBottom:6 }}
+                onBlur={e => {
+                  const lines = e.target.value.split('\n').filter(l => l.trim());
+                  if (!lines.length) return;
+                  const newSponsors = lines.map(name => ({ name: name.trim(), logo: '' }));
+                  onChange({ sponsors: [...state.sponsors, ...newSponsors] });
+                  e.target.value = '';
+                }}
+              />
+              <div style={{ fontSize:9, color:'#4a5270' }}>Tab away to add — then upload logos individually</div>
+            </div>
+
             {state.sponsors.map((sp, i) => (
               <div key={i} style={{ background: C.subCard, border: `1px solid ${C.borderColor}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>

@@ -45,7 +45,19 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
   if (s.customBlue)  cssVars['--blue'] = s.customBlue;
   if (s.customGold)  cssVars['--gold'] = s.customGold;
 
-  const posterClass = `poster style-${s.style} view-${s.template} palette-${s.palette}`;
+  const ratioCSS: Record<string, React.CSSProperties> = {
+    story:    { aspectRatio: '9/16' },
+    fourfive: { aspectRatio: '4/5' },
+    square:   { aspectRatio: '1/1' },
+    landscape:{ aspectRatio: '16/9' },
+  };
+  const extraRatioStyle = ratioCSS[s.ratio || 'story'] || {};
+  if (s.ratio === 'landscape') (cssVars as Record<string, string>)['--poster-w'] = '480px';
+
+  const posterClassParts = [`poster style-${s.style} view-${s.template} palette-${s.palette}`];
+  if (s.logoNoBg) posterClassParts.push('logo-no-bg');
+  if (s.sponsorNoBg) posterClassParts.push('sponsor-no-bg');
+  const posterClass = posterClassParts.join(' ');
   const dataAttrs: Record<string, string> = {
     'data-count': String(s.template === 'performer' ? s.playerCount : 2),
     'data-result-count': String(s.resultCount || 3),
@@ -126,6 +138,21 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
         </div>
       </section>`;
   }
+  else if (s.template === 'monthly') {
+    const rows = s.fixtures.slice(0, 5).filter(f => f.homeTeam || f.awayTeam).map(f => {
+      const title = [f.homeTeam, f.awayTeam].filter(Boolean).join(' vs ');
+      const hasBadge = Boolean(f.badge || f.time);
+      return `<div class="row fixture-row ${hasBadge ? '' : 'no-badge'}">
+        ${hasBadge ? `<div class="timebox">${f.badge ? `<span>${esc(f.badge)}</span>` : ''}${f.time ? `<small>${esc(f.time)}</small>` : ''}</div>` : ''}
+        <div class="row-main">
+          <div class="row-title">${esc(title)}</div>
+          ${f.date ? `<div class="row-meta">${esc(f.date)}${f.venue ? ` · ${esc(f.venue)}` : ''}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    const monthlyTitle = `<div class="title-block"><h2 class="title">${esc(s.titleTop || 'THIS MONTH\'S')}${s.titleBottom ? `<span>${esc(s.titleBottom)}</span>` : '<span>FIXTURES</span>'}</h2></div>`;
+    contentHtml = `${monthlyTitle}<section class="list">${rows}</section>`;
+  }
   else if (s.template === 'weekend') {
     const rows = s.fixtures.slice(0, 5).filter(f => f.homeTeam || f.awayTeam).map(f => {
       const title = [f.homeTeam, f.awayTeam].filter(Boolean).join(' vs ');
@@ -185,7 +212,7 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
     <div
       ref={ref}
       className={posterClass}
-      style={cssVars as CSSProperties}
+      style={{ ...(cssVars as CSSProperties), ...extraRatioStyle }}
       {...dataAttrs}
       dangerouslySetInnerHTML={{ __html: innerHtml }}
     />

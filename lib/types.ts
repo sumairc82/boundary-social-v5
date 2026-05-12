@@ -1,4 +1,4 @@
-export type TemplateId = 'matchday' | 'results' | 'performer' | 'signing' | 'weekend' | 'squad' | 'notice' | 'sponsor' | 'custom';
+export type TemplateId = 'matchday' | 'results' | 'performer' | 'signing' | 'weekend' | 'squad' | 'notice' | 'sponsor' | 'custom' | 'monthly';
 export type StyleId = 'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'aa'|'ab'|'ac'|'ad'|'ae'|'af'|'ag'|'ah'|'ai'|'aj'|'ak'|'al'|'am'|'an'|'ao'|'ap'|'aq'|'ar'|'as'|'at'|'au'|'av'|'aw'|'ax'|'ay'|'az'|'ba'|'bb'|'bc'|'bd'|'be'|'bf'|'bg'|'bh'|'bi'|'bj';
 
 export interface AppState {
@@ -61,4 +61,7 @@ export interface AppState {
   textColor: string;
   accentColor: string;
   onboardingDone: boolean;
+  logoNoBg: boolean;
+  sponsorNoBg: boolean;
+  ratio: 'story' | 'fourfive' | 'square' | 'landscape';
 }

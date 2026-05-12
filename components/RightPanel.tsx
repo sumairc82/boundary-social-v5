@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { AppState, TemplateId } from '@/lib/types';
+import { AppState } from '@/lib/types';
 import { PALETTES } from '@/lib/palettes';
 import { BG_STYLES } from '@/lib/bgStyles';
 import { Download } from 'lucide-react';
@@ -12,29 +12,28 @@ interface Props { state: AppState; onChange: (p: Partial<AppState>) => void; onE
 export default function RightPanel({ state, onChange, onExport, exporting }: Props) {
   const [pixelRatio, setPixelRatio] = useState(3);
 
-  const TEMPLATES: { id: TemplateId; label: string }[] = [
-    { id:'matchday',label:'Match Day'},{id:'results',label:'Results'},{id:'performer',label:'Performer'},
-    {id:'signing',label:'Signing'},{id:'weekend',label:'Weekend'},{id:'squad',label:'Squad'},
-    {id:'notice',label:'Notice'},{id:'sponsor',label:'Sponsor'},{id:'custom',label:'Custom'},
-  ];
-
   const sectionTitle: React.CSSProperties = { fontSize:9, color:C.title, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 };
 
   return (
-    <div style={{ width:210, flexShrink:0, background:C.panelBg, borderLeft:`1px solid ${C.border}`, overflowY:'auto', padding:14, display:'flex', flexDirection:'column', gap:16 }}>
+    <div style={{ width:230, minWidth:230, flexShrink:0, background:C.panelBg, borderLeft:`1px solid ${C.border}`, overflowY:'auto', padding:14, display:'flex', flexDirection:'column', gap:16 }}>
 
-      {/* Templates */}
+      {/* Aspect Ratio */}
       <div>
-        <div style={sectionTitle}>Templates</div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:4 }}>
-          {TEMPLATES.map(t => (
-            <button key={t.id} onClick={() => onChange({template:t.id})} style={{
-              padding:'6px 3px', borderRadius:5, fontSize:9.5, fontWeight:600, textAlign:'center',
-              cursor:'pointer', fontFamily:'inherit', lineHeight:1.2,
-              background: state.template===t.id ? C.activeBg : C.btnBg,
-              border:`1px solid ${state.template===t.id ? C.activeBg : C.btnBorder}`,
-              color: state.template===t.id ? C.activeColor : C.btnColor,
-            }}>{t.label}</button>
+        <div style={sectionTitle}>Aspect Ratio</div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:4 }}>
+          {([
+            { id:'story',     label:'9:16 Story' },
+            { id:'fourfive',  label:'4:5 Post' },
+            { id:'square',    label:'1:1 Square' },
+            { id:'landscape', label:'16:9 Wide' },
+          ] as const).map(r => (
+            <button key={r.id} onClick={() => onChange({ratio: r.id})} style={{
+              padding:'6px 4px', borderRadius:5, fontSize:9.5, fontWeight:600, textAlign:'center',
+              cursor:'pointer', fontFamily:'inherit',
+              background: state.ratio===r.id ? '#fbbf24' : '#161a26',
+              border:`1px solid ${state.ratio===r.id ? '#fbbf24' : '#252d42'}`,
+              color: state.ratio===r.id ? '#0a0a00' : '#6b7494',
+            }}>{r.label}</button>
           ))}
         </div>
       </div>

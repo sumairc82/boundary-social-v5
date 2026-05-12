@@ -78,4 +78,7 @@ export const DEFAULT_STATE: AppState = {
   textColor: '#ffffff',
   accentColor: '#d8aa2d',
   onboardingDone: false,
+  logoNoBg: false,
+  sponsorNoBg: false,
+  ratio: 'story',
 };

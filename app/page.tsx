@@ -61,17 +61,17 @@ export default function Home() {
           {state.palette}
         </span>
         <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
-          <button
-            onClick={() => setStudioMode(v => !v)}
-            style={{
-              fontSize:11, padding:'5px 12px',
-              background: studioMode ? '#fbbf24' : '#1e2130',
-              color: studioMode ? '#0a0a00' : '#9099b5',
-              border:`1px solid ${studioMode ? '#fbbf24' : '#2e3348'}`,
-              borderRadius:6, cursor:'pointer', fontFamily:'inherit', fontWeight: studioMode ? 800 : 500,
-            }}
-          >
-            {studioMode ? '✏️ Studio ON' : '🎨 Studio'}
+          <button onClick={() => setStudioMode(v => !v)} style={{
+            fontSize:11, padding:'5px 14px',
+            background: studioMode ? '#fbbf24' : 'transparent',
+            color: studioMode ? '#000' : '#9099b5',
+            border: `1px solid ${studioMode ? '#fbbf24' : '#2d3248'}`,
+            borderRadius:20, cursor:'pointer', fontFamily:'inherit',
+            fontWeight: studioMode ? 800 : 500,
+            display:'flex', alignItems:'center', gap:6,
+          }}>
+            <span>{studioMode ? '✏️' : '⬡'}</span>
+            {studioMode ? 'Studio ON' : 'Studio'}
           </button>
           <button onClick={() => handleExport(3)} disabled={exporting}
             style={{ fontSize:12, fontWeight:800, padding:'6px 16px', background:'#fbbf24', color:'#0a0a00', border:'none', borderRadius:7, cursor:'pointer', opacity: exporting?0.5:1, fontFamily:'inherit' }}>
@@ -85,25 +85,15 @@ export default function Home() {
         <ControlPanel state={state} onChange={onChange} />
 
         {/* Center canvas */}
-        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', background:'#0f1117', overflow:'auto', padding:24 }}>
-          <div style={{
-            boxShadow:'0 24px 80px rgba(0,0,0,0.7)', borderRadius:8,
-            position: 'relative',
-            outline: studioMode ? '2px solid #fbbf24' : 'none',
-            outlineOffset: 4,
-          }}>
+        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', background:'#090b11', overflow:'auto', padding:24, position:'relative' }}>
+          <div style={{ boxShadow:'0 24px 80px rgba(0,0,0,0.7)', borderRadius:8, position:'relative' }}>
             <PosterRenderer ref={posterRef} state={state} />
             {studioMode && (
-              <div style={{
-                position: 'absolute', top: -28, left: 0, right: 0,
-                textAlign: 'center', fontSize: 10, color: '#fbbf24',
-                fontWeight: 600, pointerEvents: 'none', letterSpacing: '0.05em',
-              }}>
-                Click elements to select &amp; move
+              <div style={{ position:'absolute', inset:0, zIndex:40, cursor: 'crosshair' }}>
+                <DesignStudio active={studioMode} posterRef={posterRef} />
               </div>
             )}
           </div>
-          <DesignStudio active={studioMode} posterRef={posterRef} />
         </div>
 
         <RightPanel state={state} onChange={onChange} onExport={handleExport} exporting={exporting} />
