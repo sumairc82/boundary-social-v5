@@ -1,65 +1,84 @@
-import Image from "next/image";
+'use client';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { AppState } from '@/lib/types';
+import { DEFAULT_STATE } from '@/lib/defaults';
+import { saveState, loadState } from '@/lib/storage';
+import { exportPoster } from '@/lib/export';
+import ControlPanel from '@/components/ControlPanel';
+import RightPanel from '@/components/RightPanel';
+
+const PosterRenderer = dynamic(() => import('@/components/PosterRenderer'), { ssr: false });
 
 export default function Home() {
+  const [state, setState] = useState<AppState>(DEFAULT_STATE);
+  const [hydrated, setHydrated] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const posterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = loadState();
+    if (saved) setState(prev => ({ ...prev, ...saved }));
+    setHydrated(true);
+  }, []);
+
+  const onChange = useCallback((patch: Partial<AppState>) => {
+    setState(prev => {
+      const next = { ...prev, ...patch };
+      saveState(next);
+      return next;
+    });
+  }, []);
+
+  const handleExport = async (pixelRatio = 3) => {
+    if (!posterRef.current) return;
+    setExporting(true);
+    try {
+      const slug = state.clubName.replace(/\s+/g, '-').toLowerCase();
+      await exportPoster(posterRef.current, `${slug}-${state.template}.jpg`);
+    } finally { setExporting(false); }
+  };
+
+  if (!hydrated) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#090b11' }}>
+      <div style={{ color: '#fbbf24', fontWeight: 900, fontSize: 16, letterSpacing: '0.14em' }}>BOUNDARY SOCIAL</div>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', background:'#090b11', color:'#fff', fontFamily:'system-ui,-apple-system,sans-serif' }}>
+      {/* Top bar */}
+      <div style={{ height:44, background:'#111318', borderBottom:'1px solid #1e2233', display:'flex', alignItems:'center', padding:'0 16px', gap:12, flexShrink:0 }}>
+        <span style={{ fontWeight:900, color:'#fbbf24', letterSpacing:'0.12em', fontSize:13 }}>BOUNDARY SOCIAL</span>
+        <span style={{ width:1, height:18, background:'#2d3242' }} />
+        <span style={{ fontSize:11, color:'#6b7494', textTransform:'capitalize' }}>{state.template.replace(/-/g,' ')}</span>
+        <span style={{ fontSize:10, background:'#1a1e2c', color:'#4a5270', border:'1px solid #252d42', borderRadius:4, padding:'2px 7px', fontFamily:'monospace', textTransform:'uppercase' }}>
+          style-{state.style}
+        </span>
+        <span style={{ fontSize:10, background:'#1a1e2c', color:'#4a5270', border:'1px solid #252d42', borderRadius:4, padding:'2px 7px', fontFamily:'monospace' }}>
+          {state.palette}
+        </span>
+        <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
+          <button onClick={() => handleExport(3)} disabled={exporting}
+            style={{ fontSize:12, fontWeight:800, padding:'6px 16px', background:'#fbbf24', color:'#0a0a00', border:'none', borderRadius:7, cursor:'pointer', opacity: exporting?0.5:1, fontFamily:'inherit' }}>
+            {exporting ? 'Exporting…' : 'Export JPG'}
+          </button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* Body */}
+      <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
+        <ControlPanel state={state} onChange={onChange} />
+
+        {/* Center canvas */}
+        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', background:'#090b11', overflow:'auto', padding:24 }}>
+          <div style={{ boxShadow:'0 24px 80px rgba(0,0,0,0.7)', borderRadius:8 }}>
+            <PosterRenderer ref={posterRef} state={state} />
+          </div>
         </div>
-      </main>
+
+        <RightPanel state={state} onChange={onChange} onExport={handleExport} exporting={exporting} />
+      </div>
     </div>
   );
 }
