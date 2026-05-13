@@ -109,5 +109,9 @@ export const DEFAULT_STATE: AppState = {
   contentX: 0,
   contentScale: 100,
   imageLayers: [],
+  padTop: 0,
+  padBottom: 0,
+  padLeft: 0,
+  padRight: 0,
   ratio: 'story',
 };

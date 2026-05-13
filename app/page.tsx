@@ -347,10 +347,10 @@ function SponsorsPanel({ state, onChange }: { state: AppState; onChange: (p: Par
       <div style={S.field}>
         <label style={S.label}>Layout</label>
         <select value={state.sponsorLayout} onChange={e => onChange({sponsorLayout: e.target.value as AppState['sponsorLayout']})} style={S.input}>
-          <option value="featured">Featured (main + partners)</option>
-          <option value="compact">Compact (all equal)</option>
-          <option value="row">Row</option>
-          <option value="centred">Centred</option>
+          <option value="featured">Main featured + partners grid</option>
+          <option value="compact">Compact grid (equal tiles)</option>
+          <option value="row">Single row</option>
+          <option value="centred">Centred rows</option>
         </select>
       </div>
       <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer' }}>
@@ -459,6 +459,17 @@ function AdjustPanelContent({ state, onChange }: { state: AppState; onChange: (p
       <button onClick={() => onChange({contentY:0, contentX:0, contentScale:100})}
         style={{ fontSize:10, color:'#fbbf24', background:'#1e2235', border:'1px solid #2d3248', borderRadius:5, padding:'4px 8px', cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-start' }}>
         ↺ Reset Content
+      </button>
+
+      <div style={S.divider} />
+      <div style={S.secTitle}>Poster Padding</div>
+      <SliderField label="Top" value={state.padTop ?? 0} min={0} max={80} onChange={v => onChange({padTop:v})} />
+      <SliderField label="Bottom" value={state.padBottom ?? 0} min={0} max={80} onChange={v => onChange({padBottom:v})} />
+      <SliderField label="Left" value={state.padLeft ?? 0} min={0} max={80} onChange={v => onChange({padLeft:v})} />
+      <SliderField label="Right" value={state.padRight ?? 0} min={0} max={80} onChange={v => onChange({padRight:v})} />
+      <button onClick={() => onChange({padTop:0,padBottom:0,padLeft:0,padRight:0})}
+        style={{ fontSize:10, color:'#fbbf24', background:'#1e2235', border:'1px solid #2d3248', borderRadius:5, padding:'4px 8px', cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-start' }}>
+        ↺ Reset Padding
       </button>
 
       <div style={S.divider} />

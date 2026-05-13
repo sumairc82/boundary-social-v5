@@ -90,5 +90,9 @@ export interface AppState {
   contentX: number;
   contentScale: number;
   imageLayers: ImageLayer[];
+  padTop: number;
+  padBottom: number;
+  padLeft: number;
+  padRight: number;
   ratio: 'story' | 'fourfive' | 'square' | 'landscape';
 }
