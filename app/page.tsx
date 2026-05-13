@@ -636,14 +636,17 @@ export default function Home() {
                 <div style={S.secTitle}>Performer Layout</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {([
-                    { id: '4-player', label: '4 Players (stacked)' },
-                    { id: '3-player', label: '3 Players' },
+                    { id: '3-player-showcase', label: '3 Players — Showcase ✦' },
+                    { id: '2-player-showcase', label: '2 Players — Showcase ✦' },
+                    { id: '4-player-showcase', label: '4 Players — Showcase ✦' },
+                    { id: '4-player', label: '4 Players (cards)' },
+                    { id: '3-player', label: '3 Players (cards)' },
                     { id: '2-player', label: '2 Players (large)' },
                     { id: '2-player-large', label: '2 Players (full-width)' },
                     { id: '1-player-hero', label: '1 Player (hero)' },
                   ] as const).map(l => (
                     <button key={l.id} onClick={() => {
-                      const countMap: Record<string,number> = {'4-player':4,'3-player':3,'2-player':2,'2-player-large':2,'1-player-hero':1};
+                      const countMap: Record<string,number> = {'4-player':4,'3-player':3,'2-player':2,'2-player-large':2,'1-player-hero':1,'3-player-showcase':3,'2-player-showcase':2,'4-player-showcase':4};
                       onChange({ performerLayout: l.id, playerCount: countMap[l.id] ?? 4 });
                     }} style={{
                       padding: '7px 10px', borderRadius: 6, fontSize: 11, textAlign: 'left',
@@ -865,6 +868,9 @@ export default function Home() {
                   <div style={S.secTitle}>Performer Layout</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {([
+                      { id: '3-player-showcase', label: '3 Showcase ✦' },
+                      { id: '2-player-showcase', label: '2 Showcase ✦' },
+                      { id: '4-player-showcase', label: '4 Showcase ✦' },
                       { id: '4-player', label: '4 Players' },
                       { id: '3-player', label: '3 Players' },
                       { id: '2-player', label: '2 Players' },

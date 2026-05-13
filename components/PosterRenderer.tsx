@@ -83,8 +83,9 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
   let effectivePlayerCount = s.playerCount;
   if (s.template === 'performer') {
     if (posterLayout === '1-player-hero') effectivePlayerCount = 1;
-    else if (posterLayout === '2-player' || posterLayout === '2-player-large') effectivePlayerCount = 2;
-    else if (posterLayout === '3-player') effectivePlayerCount = 3;
+    else if (posterLayout === '2-player' || posterLayout === '2-player-large' || posterLayout === '2-player-showcase') effectivePlayerCount = 2;
+    else if (posterLayout === '3-player' || posterLayout === '3-player-showcase') effectivePlayerCount = 3;
+    else if (posterLayout === '4-player-showcase') effectivePlayerCount = 4;
     else effectivePlayerCount = Math.min(s.playerCount, 4);
   }
 
@@ -204,6 +205,70 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
             <div class="stat">${esc(p.stat)}</div>
           </div>
         </div>`).join('')}
+      </section>`;
+    }
+
+    // Showcase layouts: full-bleed photos top, stats grid below
+    const roleIcons: Record<string, string> = {
+      'batsman': '🏏', 'bowler': '⚾', 'all-rounder': '⚡', 'wicket-keeper': '🧤',
+      'batting': '🏏', 'bowling': '⚾', 'fielding': '🌟', 'captain': '©️',
+    };
+    const getIcon = (role: string) => roleIcons[role.toLowerCase()] || '★';
+
+    if (layout === '3-player-showcase') {
+      const players = s.players.slice(0, 3);
+      return `<section class="feature-grid performer-showcase performer-showcase-3">
+        <div class="showcase-photos">
+          ${players.map(p => `
+          <div class="showcase-photo" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-x:50%;--photo-y:0%"></div>`).join('')}
+        </div>
+        <div class="showcase-stats">
+          ${players.map(p => `
+          <div class="showcase-stat">
+            <div class="showcase-stat-icon">${getIcon(p.role)}</div>
+            <div class="showcase-stat-name">${esc(p.name)}</div>
+            <div class="showcase-stat-number">${esc(p.stat)}</div>
+            <div class="showcase-stat-label">${esc(p.role)}</div>
+          </div>`).join('')}
+        </div>
+      </section>`;
+    }
+
+    if (layout === '2-player-showcase') {
+      const players = s.players.slice(0, 2);
+      return `<section class="feature-grid performer-showcase performer-showcase-2">
+        <div class="showcase-photos">
+          ${players.map(p => `
+          <div class="showcase-photo" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-x:50%;--photo-y:0%"></div>`).join('')}
+        </div>
+        <div class="showcase-stats">
+          ${players.map(p => `
+          <div class="showcase-stat">
+            <div class="showcase-stat-icon">${getIcon(p.role)}</div>
+            <div class="showcase-stat-name">${esc(p.name)}</div>
+            <div class="showcase-stat-number">${esc(p.stat)}</div>
+            <div class="showcase-stat-label">${esc(p.role)}</div>
+          </div>`).join('')}
+        </div>
+      </section>`;
+    }
+
+    if (layout === '4-player-showcase') {
+      const players = s.players.slice(0, 4);
+      return `<section class="feature-grid performer-showcase performer-showcase-4">
+        <div class="showcase-photos">
+          ${players.map(p => `
+          <div class="showcase-photo" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-x:50%;--photo-y:0%"></div>`).join('')}
+        </div>
+        <div class="showcase-stats">
+          ${players.map(p => `
+          <div class="showcase-stat">
+            <div class="showcase-stat-icon">${getIcon(p.role)}</div>
+            <div class="showcase-stat-name">${esc(p.name)}</div>
+            <div class="showcase-stat-number">${esc(p.stat)}</div>
+            <div class="showcase-stat-label">${esc(p.role)}</div>
+          </div>`).join('')}
+        </div>
       </section>`;
     }
 

@@ -893,6 +893,107 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .player-info-overlay .name { font-size: 32px; font-weight: 1000; text-transform: uppercase; line-height: .9; margin: 0; color: #fff; overflow-wrap: anywhere; }
 .player-info-overlay .statline { color: rgba(255,255,255,.82); font-size: 13px; font-weight: 850; text-transform: uppercase; }
 
+/* ─── SHOWCASE LAYOUT: large photos top + stats grid bottom ─── */
+.performer-showcase {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  height: 100%;
+  overflow: hidden;
+}
+/* Photos strip — players side by side, filling top area */
+.showcase-photos {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 0;
+  overflow: hidden;
+  position: relative;
+  align-items: end;
+}
+.showcase-photo {
+  height: 100%;
+  min-height: 200px;
+  background-image: var(--photo, none);
+  background-position: var(--photo-x, 50%) var(--photo-y, 0%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: brightness(var(--media-brightness,1)) contrast(var(--media-contrast,1)) saturate(var(--media-saturate,1));
+  position: relative;
+}
+/* Subtle gradient fade at bottom of each photo into stats area */
+.showcase-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+}
+/* Vertical dividers between photos */
+.showcase-photo + .showcase-photo::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.12);
+  z-index: 2;
+}
+/* Stats section */
+.showcase-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: rgba(0,0,0,0.55);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 4px 12px;
+  gap: 0;
+}
+.showcase-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 6px;
+  border-right: 1px solid rgba(255,255,255,0.13);
+  gap: 2px;
+}
+.showcase-stat:last-child { border-right: none; }
+.showcase-stat-icon {
+  font-size: 14px;
+  color: var(--user-accent, var(--gold));
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+.showcase-stat-name {
+  font-size: calc(10px * var(--fixture-scale, 1));
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+.showcase-stat-number {
+  font-size: calc(28px * var(--fixture-scale, 1));
+  font-weight: 1000;
+  color: var(--user-accent, var(--gold));
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.showcase-stat-label {
+  font-size: calc(8px * var(--meta-scale, 1));
+  font-weight: 800;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.2;
+}
+
+/* 2-player showcase */
+.performer-showcase-2 .showcase-photos { grid-template-columns: 1fr 1fr; }
+.performer-showcase-2 .showcase-stats  { grid-template-columns: 1fr 1fr; }
+
+/* 4-player showcase */
+.performer-showcase-4 .showcase-photos { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.performer-showcase-4 .showcase-stats  { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
 /* ── V5 extra adjust controls ── */
 /* Headline block position — only applies when non-zero via CSS var */
 .title-block {
