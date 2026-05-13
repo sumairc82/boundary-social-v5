@@ -19,11 +19,18 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
     '--meta-scale': s.metaScale / 100,
     '--meta-effective': s.metaScale / 100,
     '--badge-scale': s.badgeScale / 100,
-    '--detail-scale': s.badgeScale / 100,
+    '--detail-scale': (s.detailScale ?? 100) / 100,
     '--badge-box': `${52 * s.badgeScale / 100}px`,
     '--sponsor-scale': s.sponsorScale / 100,
     '--logo-scale': s.logoScale / 100,
+    '--logo-x': `${s.logoX ?? 0}px`,
+    '--logo-y': `${s.logoY ?? 0}px`,
     '--poster-top-pad': `${s.topSpacing}px`,
+    '--title-top-scale': (s.titleTopScale ?? 100) / 100,
+    '--title-bot-scale': (s.titleBotScale ?? 100) / 100,
+    '--headline-x': `${s.headlineX ?? 0}px`,
+    '--headline-y': `${s.headlineY ?? 0}px`,
+    '--headline-ls': `${((s.headlineSpacing ?? 100) - 100) * 0.008}em`,
     '--user-text': s.textColor || '#ffffff',
     '--user-accent': s.accentColor || 'var(--gold)',
     '--user-accent-soft': s.accentColor || 'var(--gold-soft)',
@@ -54,12 +61,26 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
   const extraRatioStyle = ratioCSS[s.ratio || 'story'] || {};
   if (s.ratio === 'landscape') (cssVars as Record<string, string>)['--poster-w'] = '480px';
 
+  const posterLayout = s.performerLayout || '4-player';
+  const layoutDataAttr = `performer-layout-${posterLayout}`;
+
   const posterClassParts = [`poster style-${s.style} view-${s.template} palette-${s.palette}`];
   if (s.logoNoBg) posterClassParts.push('logo-no-bg');
   if (s.sponsorNoBg) posterClassParts.push('sponsor-no-bg');
+  if (s.template === 'performer') posterClassParts.push(layoutDataAttr);
   const posterClass = posterClassParts.join(' ');
+
+  // player count derived from layout
+  let effectivePlayerCount = s.playerCount;
+  if (s.template === 'performer') {
+    if (posterLayout === '1-player-hero') effectivePlayerCount = 1;
+    else if (posterLayout === '2-player' || posterLayout === '2-player-large') effectivePlayerCount = 2;
+    else if (posterLayout === '3-player') effectivePlayerCount = 3;
+    else effectivePlayerCount = Math.min(s.playerCount, 4);
+  }
+
   const dataAttrs: Record<string, string> = {
-    'data-count': String(s.template === 'performer' ? s.playerCount : 2),
+    'data-count': String(s.template === 'performer' ? effectivePlayerCount : 2),
     'data-result-count': String(s.resultCount || 3),
   };
 
@@ -89,19 +110,20 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
     return `<div class="details">${tiles.map((v, i) => `<div class="detail ${i === 0 ? 'gold' : ''}">${esc(v)}</div>`).join('')}</div>`;
   };
 
-  // ── Template content ──
-  let contentHtml = '';
+  // ── Section builders ──
+  const buildHeader = () => topBarHtml;
 
-  if (s.template === 'matchday' || s.template === 'custom') {
-    contentHtml = `${titleBlockHtml}
-      <section class="card">
-        ${s.matchHome ? `<p class="team">${esc(s.matchHome)}</p>` : ''}
-        ${s.matchHome && s.matchAway ? `<div class="vs">vs</div>` : ''}
-        ${s.matchAway ? `<p class="team">${esc(s.matchAway)}</p>` : ''}
-        ${detailsGroup(s.details || [])}
-      </section>`;
-  }
-  else if (s.template === 'results') {
+  const buildTitleBlock = () => titleBlockHtml;
+
+  const buildMatchdayContent = () => `
+    <section class="card">
+      ${s.matchHome ? `<p class="team">${esc(s.matchHome)}</p>` : ''}
+      ${s.matchHome && s.matchAway ? `<div class="vs">vs</div>` : ''}
+      ${s.matchAway ? `<p class="team">${esc(s.matchAway)}</p>` : ''}
+      ${detailsGroup(s.details || [])}
+    </section>`;
+
+  const buildResultsContent = () => {
     const rows = s.results.slice(0, s.resultCount).map(r => {
       const badgeClass = r.outcome === 'L' ? 'loss' : r.outcome === 'NR' ? 'nr' : '';
       return `<div class="row result-row">
@@ -113,32 +135,94 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
         </div>
       </div>`;
     }).join('');
-    contentHtml = `${titleBlockHtml}<section class="list">${rows}</section>`;
-  }
-  else if (s.template === 'performer') {
-    const players = s.players.slice(0, s.playerCount).map((p) => `
-      <div class="player-card">
-        <div class="player-photo" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
-        <div class="player-copy">
-          <div class="role">${esc(p.role)}</div>
-          <h3 class="name">${esc(p.name)}</h3>
-          <div class="statline">${esc(p.stat)}</div>
-        </div>
-      </div>`).join('');
-    contentHtml = `${titleBlockHtml}<section class="feature-grid">${players}</section>`;
-  }
-  else if (s.template === 'signing') {
-    contentHtml = `${titleBlockHtml}
-      <section class="player-card">
-        <div class="player-photo" style="--photo:${s.signingPhotoDataUrl ? `url('${s.signingPhotoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
-        <div class="player-copy">
-          <div class="role">${esc(s.signingRole)}</div>
-          <h3 class="name">${esc(s.signingName)}</h3>
-          <div class="statline">${esc(s.signingNote)}</div>
+    return `<section class="list">${rows}</section>`;
+  };
+
+  const buildPerformerContent = () => {
+    const count = effectivePlayerCount;
+    const layout = posterLayout;
+
+    if (layout === '1-player-hero') {
+      const p = s.players[0] || { name: '', role: '', stat: '', photoDataUrl: '' };
+      return `<section class="feature-grid performer-hero">
+        <div class="player-card player-card-hero">
+          <div class="player-photo player-photo-hero" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
+          <div class="player-info-overlay">
+            <div class="role">${esc(p.role)}</div>
+            <h3 class="name">${esc(p.name)}</h3>
+            <div class="statline">${esc(p.stat)}</div>
+          </div>
         </div>
       </section>`;
-  }
-  else if (s.template === 'monthly') {
+    }
+
+    if (layout === '2-player-large') {
+      return `<section class="feature-grid performer-2-large">
+        ${s.players.slice(0, 2).map(p => `
+        <div class="player-card player-card-2large">
+          <div class="player-photo player-photo-2large" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
+          <div class="player-info">
+            <div class="role">${esc(p.role)}</div>
+            <div class="player-name">${esc(p.name)}</div>
+            <div class="stat">${esc(p.stat)}</div>
+          </div>
+        </div>`).join('')}
+      </section>`;
+    }
+
+    if (layout === '2-player') {
+      return `<section class="feature-grid performer-2">
+        ${s.players.slice(0, 2).map(p => `
+        <div class="player-card player-card-2">
+          <div class="player-photo player-photo-2" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
+          <div class="player-info">
+            <div class="role">${esc(p.role)}</div>
+            <div class="player-name">${esc(p.name)}</div>
+            <div class="stat">${esc(p.stat)}</div>
+          </div>
+        </div>`).join('')}
+      </section>`;
+    }
+
+    if (layout === '3-player') {
+      return `<section class="feature-grid performer-3">
+        ${s.players.slice(0, 3).map(p => `
+        <div class="player-card player-card-3">
+          <div class="player-photo player-photo-3" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
+          <div class="player-info">
+            <div class="role">${esc(p.role)}</div>
+            <div class="player-name">${esc(p.name)}</div>
+            <div class="stat">${esc(p.stat)}</div>
+          </div>
+        </div>`).join('')}
+      </section>`;
+    }
+
+    // default 4-player
+    return `<section class="feature-grid performer-4">
+      ${s.players.slice(0, count).map(p => `
+      <div class="player-card player-card-4">
+        <div class="player-photo player-photo-4" style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
+        <div class="player-info">
+          <div class="role">${esc(p.role)}</div>
+          <div class="player-name">${esc(p.name)}</div>
+          <div class="stat">${esc(p.stat)}</div>
+        </div>
+      </div>`).join('')}
+    </section>`;
+  };
+
+  const buildSigningContent = () => `
+    <section class="player-card">
+      <div class="player-photo" style="--photo:${s.signingPhotoDataUrl ? `url('${s.signingPhotoDataUrl}')` : 'none'};--photo-zoom:100%;--photo-x:50%;--photo-y:20%"></div>
+      <div class="player-copy">
+        <div class="role">${esc(s.signingRole)}</div>
+        <h3 class="name">${esc(s.signingName)}</h3>
+        <div class="statline">${esc(s.signingNote)}</div>
+      </div>
+    </section>`;
+
+  const buildFixturesContent = () => {
     const rows = s.fixtures.slice(0, 5).filter(f => f.homeTeam || f.awayTeam).map(f => {
       const title = [f.homeTeam, f.awayTeam].filter(Boolean).join(' vs ');
       const hasBadge = Boolean(f.badge || f.time);
@@ -150,45 +234,31 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
         </div>
       </div>`;
     }).join('');
-    const monthlyTitle = `<div class="title-block"><h2 class="title">${esc(s.titleTop || 'THIS MONTH\'S')}${s.titleBottom ? `<span>${esc(s.titleBottom)}</span>` : '<span>FIXTURES</span>'}</h2></div>`;
-    contentHtml = `${monthlyTitle}<section class="list">${rows}</section>`;
-  }
-  else if (s.template === 'weekend') {
-    const rows = s.fixtures.slice(0, 5).filter(f => f.homeTeam || f.awayTeam).map(f => {
-      const title = [f.homeTeam, f.awayTeam].filter(Boolean).join(' vs ');
-      const hasBadge = Boolean(f.badge || f.time);
-      return `<div class="row fixture-row ${hasBadge ? '' : 'no-badge'}">
-        ${hasBadge ? `<div class="timebox">${f.badge ? `<span>${esc(f.badge)}</span>` : ''}${f.time ? `<small>${esc(f.time)}</small>` : ''}</div>` : ''}
-        <div class="row-main">
-          <div class="row-title">${esc(title)}</div>
-          ${f.date ? `<div class="row-meta">${esc(f.date)}${f.venue ? ` · ${esc(f.venue)}` : ''}</div>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-    contentHtml = `${titleBlockHtml}<section class="list">${rows}</section>`;
-  }
-  else if (s.template === 'squad') {
+    return `<section class="list">${rows}</section>`;
+  };
+
+  const buildSquadContent = () => {
     const players = s.squadPlayers.slice(0, 14).map((p, i) => `
       <div class="row schedule-row">
         <div class="role">${String(i + 1).padStart(2, '0')}</div>
         <div class="row-main"><div class="row-title">${esc(typeof p === 'string' ? p : p.name)}</div></div>
       </div>`).join('');
-    contentHtml = `${titleBlockHtml}<section class="squad-layout"><div class="squad-grid">${players}</div></section>`;
-  }
-  else if (s.template === 'notice') {
-    contentHtml = `${titleBlockHtml}
-      <section class="card">
-        <p class="team" style="white-space:pre-line">${esc(s.noticeText)}</p>
-      </section>`;
-  }
-  else if (s.template === 'sponsor') {
+    return `<section class="squad-layout"><div class="squad-grid">${players}</div></section>`;
+  };
+
+  const buildNoticeContent = () => `
+    <section class="card">
+      <p class="team" style="white-space:pre-line">${esc(s.noticeText)}</p>
+    </section>`;
+
+  const buildSponsorContent = () => {
     const wall = s.sponsors.length
       ? s.sponsors.slice(0, 4).map(sp =>
           `<div class="sponsor">${sp.logo ? `<div class="logo-bg" style="background-image:url('${sp.logo}')"></div>` : `<div class="logo-bg text-only">${esc(sp.name)}</div>`}</div>`
         ).join('')
       : `<div class="logo-bg text-only" style="min-height:120px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.5">Add your sponsor logo</div>`;
-    contentHtml = `${titleBlockHtml}<section class="partner-card"><div class="sponsors">${wall}</div></section>`;
-  }
+    return `<section class="partner-card"><div class="sponsors">${wall}</div></section>`;
+  };
 
   // ── Footer ──
   const footerHtml = s.sponsors.length && s.template !== 'sponsor' ? `
@@ -200,10 +270,74 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
       </div>
     </footer>` : '';
 
+  // ── Section ordering ──
+  const sectionOrder = s.sectionOrder || [];
+
+  const buildContentSections = () => {
+    const sections: string[] = [];
+    for (const section of sectionOrder) {
+      if (section === 'header') continue; // handled separately
+      if (section === 'footer') continue; // handled separately
+      if (section === 'title') {
+        if (s.template === 'monthly') {
+          const monthlyTitle = `<div class="title-block"><h2 class="title">${esc(s.titleTop || 'THIS MONTH\'S')}${s.titleBottom ? `<span>${esc(s.titleBottom)}</span>` : '<span>FIXTURES</span>'}</h2></div>`;
+          sections.push(monthlyTitle);
+        } else {
+          sections.push(buildTitleBlock());
+        }
+      } else if (section === 'fixtures') {
+        sections.push(buildFixturesContent());
+      } else if (section === 'results') {
+        sections.push(buildResultsContent());
+      } else if (section === 'players') {
+        sections.push(buildPerformerContent());
+      } else if (section === 'player') {
+        sections.push(buildSigningContent());
+      } else if (section === 'squad') {
+        sections.push(buildSquadContent());
+      } else if (section === 'notice') {
+        sections.push(buildNoticeContent());
+      } else if (section === 'sponsors') {
+        sections.push(buildSponsorContent());
+      } else if (section === 'content') {
+        sections.push(buildMatchdayContent());
+      }
+    }
+    return sections.join('');
+  };
+
+  // For templates without sectionOrder, fall back to original behavior
+  let contentHtml = '';
+  if (sectionOrder.length > 0) {
+    contentHtml = buildContentSections();
+  } else {
+    // Original fallback
+    if (s.template === 'matchday' || s.template === 'custom') {
+      contentHtml = `${titleBlockHtml}${buildMatchdayContent()}`;
+    } else if (s.template === 'results') {
+      contentHtml = `${titleBlockHtml}${buildResultsContent()}`;
+    } else if (s.template === 'performer') {
+      contentHtml = `${titleBlockHtml}${buildPerformerContent()}`;
+    } else if (s.template === 'signing') {
+      contentHtml = `${titleBlockHtml}${buildSigningContent()}`;
+    } else if (s.template === 'monthly') {
+      const monthlyTitle = `<div class="title-block"><h2 class="title">${esc(s.titleTop || 'THIS MONTH\'S')}${s.titleBottom ? `<span>${esc(s.titleBottom)}</span>` : '<span>FIXTURES</span>'}</h2></div>`;
+      contentHtml = `${monthlyTitle}${buildFixturesContent()}`;
+    } else if (s.template === 'weekend') {
+      contentHtml = `${titleBlockHtml}${buildFixturesContent()}`;
+    } else if (s.template === 'squad') {
+      contentHtml = `${titleBlockHtml}${buildSquadContent()}`;
+    } else if (s.template === 'notice') {
+      contentHtml = `${titleBlockHtml}${buildNoticeContent()}`;
+    } else if (s.template === 'sponsor') {
+      contentHtml = `${titleBlockHtml}${buildSponsorContent()}`;
+    }
+  }
+
   const innerHtml = `
     <div class="poster-bg-image"></div>
     <div class="poster-inner">
-      ${topBarHtml}
+      ${s.showHeader !== false ? buildHeader() : ''}
       <main class="content">${contentHtml}</main>
       ${footerHtml}
     </div>`;

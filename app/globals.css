@@ -582,3 +582,199 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .view-weekend .list { justify-content: stretch; }
 .view-weekend .fixture-row:nth-child(n+5) { display: none; }
 .view-weekend .row-title { font-size: calc(13px * var(--fixture-effective, 1)); }
+
+/* ── Performer Layout Variants ── */
+
+/* Shared player-info style (new class, distinct from player-copy) */
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  min-width: 0;
+}
+.player-info .role { color: var(--user-accent-soft, var(--gold-soft, #f4d36b)); font-size: 11px; font-weight: 950; text-transform: uppercase; }
+.player-info .player-name { margin: 0; font-size: 18px; line-height: .9; font-weight: 1000; text-transform: uppercase; overflow-wrap: anywhere; color: var(--user-text, #fff); }
+.player-info .stat { color: rgba(255,255,255,.76); font-size: 11px; font-weight: 850; text-transform: uppercase; overflow-wrap: anywhere; }
+
+/* 4-player: 4 cards stacked, row layout */
+.performer-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.player-card-4 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.16);
+  min-height: 72px;
+}
+.player-photo-4 {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background-image: var(--photo, none);
+  background-position: var(--photo-x, 50%) var(--photo-y, 50%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: brightness(var(--media-brightness,1)) contrast(var(--media-contrast,1)) saturate(var(--media-saturate,1));
+}
+.player-card-4 .player-info .player-name { font-size: 15px; }
+
+/* 3-player: 3 cards stacked, row layout, larger photos */
+.performer-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.player-card-3 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.16);
+  min-height: 88px;
+}
+.player-photo-3 {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  background-image: var(--photo, none);
+  background-position: var(--photo-x, 50%) var(--photo-y, 50%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: brightness(var(--media-brightness,1)) contrast(var(--media-contrast,1)) saturate(var(--media-saturate,1));
+}
+.player-card-3 .player-info .player-name { font-size: 18px; }
+
+/* 2-player: 2 cards row layout, bigger photos */
+.performer-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.player-card-2 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.16);
+  min-height: 120px;
+}
+.player-photo-2 {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background-image: var(--photo, none);
+  background-position: var(--photo-x, 50%) var(--photo-y, 50%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: brightness(var(--media-brightness,1)) contrast(var(--media-contrast,1)) saturate(var(--media-saturate,1));
+}
+.player-card-2 .player-info .player-name { font-size: 22px; }
+.player-card-2 .player-info .stat { font-size: 13px; }
+
+/* 2-player-large: full width, stacked vertically */
+.performer-2-large {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.player-card-2large {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.16);
+}
+.player-photo-2large {
+  width: 100%;
+  height: 180px;
+  background-image: var(--photo, none);
+  background-position: var(--photo-x, 50%) var(--photo-y, 20%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: brightness(var(--media-brightness,1)) contrast(var(--media-contrast,1)) saturate(var(--media-saturate,1));
+}
+.player-card-2large .player-info {
+  padding: 8px 10px;
+}
+.player-card-2large .player-info .player-name { font-size: 20px; }
+
+/* 1-player-hero: full poster hero */
+.performer-hero {
+  display: flex;
+  flex-direction: column;
+}
+.player-card-hero {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  flex: 1;
+  min-height: 320px;
+}
+.player-photo-hero {
+  position: absolute;
+  inset: 0;
+  background-image: var(--photo, none);
+  background-position: var(--photo-x, 50%) var(--photo-y, 20%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: brightness(var(--media-brightness,1)) contrast(var(--media-contrast,1)) saturate(var(--media-saturate,1));
+}
+.player-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 14px;
+  background: linear-gradient(to top, rgba(0,0,0,.82), transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.player-info-overlay .role { color: var(--user-accent-soft, var(--gold-soft, #f4d36b)); font-size: 12px; font-weight: 950; text-transform: uppercase; }
+.player-info-overlay .name { font-size: 32px; font-weight: 1000; text-transform: uppercase; line-height: .9; margin: 0; color: #fff; overflow-wrap: anywhere; }
+.player-info-overlay .statline { color: rgba(255,255,255,.82); font-size: 13px; font-weight: 850; text-transform: uppercase; }
+
+/* ── V5 extra adjust controls ── */
+/* Headline block position — only applies when non-zero via CSS var */
+.title-block {
+  transform: translate(var(--headline-x, 0px), var(--headline-y, 0px));
+}
+/* Title line scaling (multiplicative on top of title-scale) */
+.title {
+  font-size: calc(50px * var(--title-scale, 1) * var(--title-top-scale, 1));
+}
+.title span {
+  /* font-size relative to parent (.title) — multiply by bot-scale */
+  font-size: calc(1em * var(--title-bot-scale, 1));
+}
+/* Headline letter-spacing — default 0 so no change until user adjusts */
+.title {
+  letter-spacing: calc(var(--headline-ls, 0em));
+}
+/* Logo offset — only moves when non-zero */
+.crest {
+  transform: translate(var(--logo-x, 0px), var(--logo-y, 0px));
+}
+/* Detail text scale multiplier */
+.detail {
+  font-size: calc(10px * var(--meta-scale, 1) * var(--detail-scale, 1));
+}

@@ -7,193 +7,305 @@ interface SelectedEl {
   el: HTMLElement;
   rect: Rect;
   origTransform: string;
+  origWidth: string;
+  origHeight: string;
   tx: number;
   ty: number;
+  w: number;  // current CSS width override (0 = not set)
+  h: number;  // current CSS height override (0 = not set)
 }
 
 interface Props {
   active: boolean;
   posterRef: React.RefObject<HTMLDivElement | null>;
+  zoom?: number;
 }
 
-// Elements that should NOT be selectable
 const SKIP_CLASSES = ['poster', 'poster-inner', 'poster-bg-image'];
-// Elements that make good selection targets (stop bubbling at these)
-const TARGET_CLASSES = ['top', 'title-block', 'card', 'list', 'feature-grid', 'player-card', 'partner-card', 'footer', 'squad-layout', 'title', 'team', 'club', 'chips', 'crest', 'crest-lockup'];
+const TARGET_CLASSES = ['top', 'title-block', 'card', 'list', 'feature-grid', 'player-card',
+  'partner-card', 'footer', 'squad-layout', 'title', 'team', 'club', 'chips', 'crest',
+  'crest-lockup', 'content'];
 
-export default function DesignStudio({ active, posterRef }: Props) {
-  const [selected, setSelected] = useState<SelectedEl | null>(null);
+// 8 resize handle positions
+const HANDLES = [
+  { id: 'nw', cursor: 'nw-resize', left: -5, top: -5 },
+  { id: 'n',  cursor: 'n-resize',  left: '50%', top: -5 },
+  { id: 'ne', cursor: 'ne-resize', right: -5, top: -5 },
+  { id: 'e',  cursor: 'e-resize',  right: -5, top: '50%' },
+  { id: 'se', cursor: 'se-resize', right: -5, bottom: -5 },
+  { id: 's',  cursor: 's-resize',  left: '50%', bottom: -5 },
+  { id: 'sw', cursor: 'sw-resize', left: -5, bottom: -5 },
+  { id: 'w',  cursor: 'w-resize',  left: -5, top: '50%' },
+] as const;
+
+export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
+  const [selected, setSelected] = useState<SelectedEl[]>([]);
   const dragging = useRef(false);
-  const dragStart = useRef({ mx: 0, my: 0, tx: 0, ty: 0 });
+  const resizing = useRef<{ handle: string; startMx: number; startMy: number; origRect: Rect; origW: number; origH: number; origTx: number; origTy: number } | null>(null);
+  const shiftHeld = useRef(false);
 
-  // Get rect of element relative to poster
   const getRelRect = useCallback((el: HTMLElement): Rect => {
-    if (!posterRef.current) return { x: 0, y: 0, width: 0, height: 0 };
-    const posterRect = posterRef.current.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    return {
-      x: elRect.left - posterRect.left,
-      y: elRect.top - posterRect.top,
-      width: elRect.width,
-      height: elRect.height,
-    };
-  }, [posterRef]);
-
-  // Handle click on poster to select element
-  useEffect(() => {
-    if (!active || !posterRef.current) {
-      setSelected(null);
-      return;
-    }
     const poster = posterRef.current;
+    if (!poster) return { x: 0, y: 0, width: 0, height: 0 };
+    const pr = poster.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    return {
+      x: (er.left - pr.left) / zoom,
+      y: (er.top - pr.top) / zoom,
+      width: er.width / zoom,
+      height: er.height / zoom,
+    };
+  }, [posterRef, zoom]);
 
-    const onClick = (e: MouseEvent) => {
+  useEffect(() => {
+    const dn = (e: KeyboardEvent) => { shiftHeld.current = e.shiftKey; };
+    const up = (e: KeyboardEvent) => { shiftHeld.current = e.shiftKey; };
+    document.addEventListener('keydown', dn);
+    document.addEventListener('keyup', up);
+    return () => { document.removeEventListener('keydown', dn); document.removeEventListener('keyup', up); };
+  }, []);
+
+  // Click-to-select (attached to document, checks posterRef at call-time)
+  useEffect(() => {
+    if (!active) { setSelected([]); return; }
+
+    const handleClick = (e: MouseEvent) => {
+      const poster = posterRef.current;
+      if (!poster) return;
       const target = e.target as HTMLElement;
       if (!poster.contains(target)) return;
+      if ((target as HTMLElement).closest?.('[data-studio-ui]')) return;
 
-      // Walk up from click target to find a good selection target
       let el: HTMLElement | null = target;
       while (el && el !== poster) {
-        const skip = SKIP_CLASSES.some(c => el!.classList.contains(c));
-        if (skip) { el = el.parentElement; continue; }
-        const isTarget = TARGET_CLASSES.some(c => el!.classList.contains(c));
-        if (isTarget) break;
+        if (SKIP_CLASSES.some(c => el!.classList.contains(c))) { el = el.parentElement; continue; }
+        if (TARGET_CLASSES.some(c => el!.classList.contains(c))) break;
         el = el.parentElement;
       }
-
-      if (!el || el === poster) {
-        setSelected(null);
-        return;
-      }
+      if (!el || el === poster) { setSelected([]); return; }
 
       const existing = el.style.transform || '';
       const match = existing.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
       const tx = match ? parseFloat(match[1]) : 0;
       const ty = match ? parseFloat(match[2]) : 0;
+      const origTransform = existing.replace(/translate\([^)]+\)/, '').trim();
+      const currentW = parseFloat(el.style.width) || 0;
+      const currentH = parseFloat(el.style.height) || 0;
 
-      setSelected({
-        el,
-        rect: getRelRect(el),
-        origTransform: existing.replace(/translate\([^)]+\)/, '').trim(),
-        tx, ty,
-      });
+      const newItem: SelectedEl = {
+        el, rect: getRelRect(el),
+        origTransform,
+        origWidth: el.style.width || '',
+        origHeight: el.style.height || '',
+        tx, ty, w: currentW, h: currentH,
+      };
+
+      if (shiftHeld.current) {
+        setSelected(prev => {
+          const idx = prev.findIndex(s => s.el === el);
+          return idx >= 0 ? prev.filter((_, i) => i !== idx) : [...prev, newItem];
+        });
+      } else {
+        setSelected([newItem]);
+      }
     };
 
-    poster.addEventListener('click', onClick);
-    return () => poster.removeEventListener('click', onClick);
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
   }, [active, posterRef, getRelRect]);
 
-  // Update rect on interval
+  // Refresh rects periodically
   useEffect(() => {
-    if (!selected) return;
-    const interval = setInterval(() => {
-      if (selected.el) {
-        setSelected(prev => prev ? { ...prev, rect: getRelRect(prev.el) } : null);
-      }
+    if (!selected.length) return;
+    const id = setInterval(() => {
+      setSelected(prev => prev.map(s => ({ ...s, rect: getRelRect(s.el) })));
     }, 100);
-    return () => clearInterval(interval);
+    return () => clearInterval(id);
   }, [selected, getRelRect]);
 
-  // Mouse drag handlers
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!selected) return;
-    e.preventDefault();
+  // ── DRAG to move ──
+  const onDragMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!selected.length) return;
+    e.preventDefault(); e.stopPropagation();
     dragging.current = true;
-    dragStart.current = { mx: e.clientX, my: e.clientY, tx: selected.tx, ty: selected.ty };
+    const startMx = e.clientX, startMy = e.clientY;
+    const starts = selected.map(s => ({ tx: s.tx, ty: s.ty }));
 
     const onMove = (ev: MouseEvent) => {
-      if (!dragging.current || !selected) return;
-      const dx = ev.clientX - dragStart.current.mx;
-      const dy = ev.clientY - dragStart.current.my;
-      const newTx = dragStart.current.tx + dx;
-      const newTy = dragStart.current.ty + dy;
-      selected.el.style.transform = `translate(${newTx}px, ${newTy}px) ${selected.origTransform}`.trim();
-      setSelected(prev => prev ? { ...prev, tx: newTx, ty: newTy, rect: getRelRect(prev.el) } : null);
+      if (!dragging.current) return;
+      const dx = (ev.clientX - startMx) / zoom;
+      const dy = (ev.clientY - startMy) / zoom;
+      setSelected(prev => prev.map((s, i) => {
+        const newTx = starts[i].tx + dx, newTy = starts[i].ty + dy;
+        s.el.style.transform = `translate(${newTx}px,${newTy}px) ${s.origTransform}`.trim();
+        return { ...s, tx: newTx, ty: newTy };
+      }));
+    };
+    const onUp = () => {
+      dragging.current = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [selected, zoom]);
+
+  // ── RESIZE handle mousedown ──
+  const onResizeMouseDown = useCallback((e: React.MouseEvent, handleId: string) => {
+    if (selected.length !== 1) return;
+    e.preventDefault(); e.stopPropagation();
+    const s = selected[0];
+    const origRect = { ...s.rect };
+    const origW = s.w || s.rect.width;
+    const origH = s.h || s.rect.height;
+    resizing.current = { handle: handleId, startMx: e.clientX, startMy: e.clientY, origRect, origW, origH, origTx: s.tx, origTy: s.ty };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!resizing.current) return;
+      const { handle, startMx, startMy, origRect: oR, origW: oW, origH: oH, origTx: oTx, origTy: oTy } = resizing.current;
+      const rawDx = (ev.clientX - startMx) / zoom;
+      const rawDy = (ev.clientY - startMy) / zoom;
+
+      let newW = oW, newH = oH, newTx = oTx, newTy = oTy;
+
+      // Width changes
+      if (handle.includes('e')) newW = Math.max(40, oW + rawDx);
+      if (handle.includes('w')) { newW = Math.max(40, oW - rawDx); newTx = oTx + rawDx; }
+      // Height changes
+      if (handle.includes('s')) newH = Math.max(20, oH + rawDy);
+      if (handle.includes('n')) { newH = Math.max(20, oH - rawDy); newTy = oTy + rawDy; }
+
+      s.el.style.width = `${newW}px`;
+      s.el.style.height = `${newH}px`;
+      s.el.style.transform = `translate(${newTx}px,${newTy}px) ${s.origTransform}`.trim();
+
+      setSelected(prev => prev.map(item =>
+        item.el === s.el
+          ? { ...item, w: newW, h: newH, tx: newTx, ty: newTy, rect: { ...oR, width: newW, height: newH } }
+          : item
+      ));
     };
 
     const onUp = () => {
-      dragging.current = false;
+      resizing.current = null;
+      setSelected(prev => prev.map(item =>
+        item.el === s.el ? { ...item, rect: getRelRect(item.el) } : item
+      ));
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
 
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
-  }, [selected, getRelRect]);
+  }, [selected, zoom, getRelRect]);
 
-  // Reset element position
   const onReset = useCallback(() => {
-    if (!selected) return;
-    selected.el.style.transform = selected.origTransform || '';
-    setSelected(prev => prev ? { ...prev, tx: 0, ty: 0, rect: getRelRect(prev.el) } : null);
-  }, [selected, getRelRect]);
-
-  const onDeselect = useCallback(() => setSelected(null), []);
+    setSelected(prev => prev.map(s => {
+      s.el.style.transform = s.origTransform || '';
+      s.el.style.width = s.origWidth;
+      s.el.style.height = s.origHeight;
+      return { ...s, tx: 0, ty: 0, w: 0, h: 0, rect: getRelRect(s.el) };
+    }));
+  }, [getRelRect]);
 
   if (!active) return null;
 
+  const primary = selected[0] ?? null;
+  const HANDLE_SIZE = 9;
+
   return (
     <>
-      {/* Hint banner */}
-      {!selected && (
-        <div style={{
-          position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(251,191,36,0.92)', color: '#000', fontSize: 11, fontWeight: 700,
-          padding: '5px 14px', borderRadius: 20, pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 100,
+      {/* Hint */}
+      {!selected.length && (
+        <div data-studio-ui style={{
+          position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(251,191,36,0.95)', color: '#000', fontSize: 11, fontWeight: 700,
+          padding: '5px 16px', borderRadius: 20, pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 100,
         }}>
-          Click any element on the poster to select &amp; move it
+          ✛ Click to select · Shift+Click multi-select · Drag corners to resize
         </div>
       )}
 
-      {/* Selection box */}
-      {selected && (
-        <div style={{
-          position: 'absolute',
-          left: selected.rect.x - 3,
-          top: selected.rect.y - 3,
-          width: selected.rect.width + 6,
-          height: selected.rect.height + 6,
-          border: '2px solid #fbbf24',
-          borderRadius: 4,
-          pointerEvents: 'none',
-          zIndex: 50,
-          boxShadow: '0 0 0 1px rgba(0,0,0,0.5)',
-        }} />
+      {/* Multi-select count */}
+      {selected.length > 1 && (
+        <div data-studio-ui style={{
+          position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(251,191,36,0.95)', color: '#000', fontSize: 11, fontWeight: 700,
+          padding: '3px 12px', borderRadius: 20, pointerEvents: 'none', zIndex: 100,
+        }}>
+          {selected.length} selected
+        </div>
       )}
 
-      {/* Drag handle + controls */}
-      {selected && (
-        <div style={{
+      {selected.map((s, i) => (
+        <div key={i} style={{
           position: 'absolute',
-          left: selected.rect.x + selected.rect.width / 2 - 60,
-          top: Math.max(0, selected.rect.y - 42),
-          zIndex: 60,
-          display: 'flex', gap: 4, alignItems: 'center',
-          background: '#1a1e2c',
-          border: '1px solid #fbbf24',
-          borderRadius: 20,
-          padding: '4px 8px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
+          left: s.rect.x - 2, top: s.rect.y - 2,
+          width: s.rect.width + 4, height: s.rect.height + 4,
+          border: '2px solid #fbbf24',
+          borderRadius: 3, pointerEvents: 'none', zIndex: 50,
+          boxShadow: '0 0 0 1px rgba(0,0,0,0.5)',
         }}>
+          {/* Resize handles — only on primary (first selected) */}
+          {i === 0 && HANDLES.map(h => (
+            <div
+              key={h.id}
+              data-studio-ui
+              onMouseDown={e => onResizeMouseDown(e, h.id)}
+              style={{
+                position: 'absolute',
+                left: typeof h.left === 'number' ? h.left - HANDLE_SIZE / 2 : undefined,
+                right: 'right' in h && typeof h.right === 'number' ? h.right - HANDLE_SIZE / 2 : undefined,
+                top: typeof h.top === 'number' ? h.top - HANDLE_SIZE / 2 : h.top === '50%' ? `calc(50% - ${HANDLE_SIZE/2}px)` : undefined,
+                bottom: 'bottom' in h && typeof h.bottom === 'number' ? h.bottom - HANDLE_SIZE / 2 : undefined,
+                left: h.id === 'n' || h.id === 's' ? `calc(50% - ${HANDLE_SIZE/2}px)` : typeof h.left === 'number' ? h.left - HANDLE_SIZE/2 : undefined,
+                width: HANDLE_SIZE, height: HANDLE_SIZE,
+                background: '#fff', border: '2px solid #fbbf24',
+                borderRadius: 2, cursor: h.cursor,
+                pointerEvents: 'auto', zIndex: 55,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+              }}
+            />
+          ))}
+        </div>
+      ))}
+
+      {/* Drag toolbar */}
+      {primary && (
+        <div
+          data-studio-ui
+          style={{
+            position: 'absolute',
+            left: Math.max(0, primary.rect.x + primary.rect.width / 2 - 80),
+            top: Math.max(0, primary.rect.y - 46),
+            zIndex: 60, display: 'flex', gap: 2, alignItems: 'center',
+            background: '#0f1120', border: '1.5px solid #fbbf24',
+            borderRadius: 24, padding: '5px 10px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
+            pointerEvents: 'auto',
+          }}
+        >
           <div
-            onMouseDown={onMouseDown}
+            onMouseDown={onDragMouseDown}
             style={{
-              cursor: 'grab', padding: '4px 8px', fontSize: 14,
+              cursor: 'grab', padding: '3px 8px', fontSize: 15,
               userSelect: 'none', color: '#fbbf24',
-              display: 'flex', alignItems: 'center', gap: 4,
+              display: 'flex', alignItems: 'center', gap: 5,
             }}
-            title="Drag to move"
           >
-            ✛
-            <span style={{ fontSize: 9, color: '#9099b5', fontWeight: 600 }}>DRAG</span>
+            ✛ <span style={{ fontSize: 9, color: '#8899bb', fontWeight: 700 }}>DRAG</span>
           </div>
-          <div style={{ width: 1, height: 16, background: '#2d3248' }} />
-          <button onClick={onReset} title="Reset position"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#9099b5', padding: '2px 4px' }}>
+          <div style={{ width: 1, height: 16, background: '#2d3248', margin: '0 2px' }} />
+          <div style={{ fontSize: 9, color: '#5a6a8a', padding: '0 4px', fontFamily: 'monospace' }}>
+            {Math.round(primary.rect.width)}×{Math.round(primary.rect.height)}
+          </div>
+          <div style={{ width: 1, height: 16, background: '#2d3248', margin: '0 2px' }} />
+          <button onClick={onReset}
+            style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#8899bb', padding:'2px 5px' }}>
             ↺
           </button>
-          <button onClick={onDeselect} title="Deselect"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#6b7494', padding: '2px 4px' }}>
+          <button onClick={() => setSelected([])}
+            style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#6b7494', padding:'2px 5px' }}>
             ✕
           </button>
         </div>

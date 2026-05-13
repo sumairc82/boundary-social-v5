@@ -1,8 +1,24 @@
 import { AppState } from './types';
+
+export const SECTION_ORDERS: Record<string, string[]> = {
+  matchday:  ['header', 'title', 'fixtures', 'footer'],
+  results:   ['header', 'title', 'results', 'footer'],
+  performer: ['header', 'players', 'footer'],
+  signing:   ['header', 'player', 'footer'],
+  weekend:   ['header', 'title', 'fixtures', 'footer'],
+  squad:     ['header', 'title', 'squad', 'footer'],
+  sponsor:   ['header', 'title', 'sponsors', 'footer'],
+  notice:    ['header', 'title', 'notice', 'footer'],
+  custom:    ['header', 'title', 'content', 'footer'],
+  monthly:   ['header', 'title', 'fixtures', 'footer'],
+};
+
 export const DEFAULT_STATE: AppState = {
   template: 'matchday',
   style: 'a',
   palette: 'heritage',
+  performerLayout: '4-player',
+  sectionOrder: SECTION_ORDERS['matchday'],
   clubName: 'RIVERSIDE CC',
   clubTagline: 'Est. 1887 · Premier Division',
   logoDataUrl: '',
@@ -58,11 +74,19 @@ export const DEFAULT_STATE: AppState = {
   sponsorLayout: 'featured',
   sponsorCount: 'all',
   titleScale: 100,
+  titleTopScale: 100,
+  titleBotScale: 100,
+  headlineX: 0,
+  headlineY: 0,
+  headlineSpacing: 100,
+  detailScale: 100,
   fixtureScale: 100,
   metaScale: 100,
   badgeScale: 100,
   sponsorScale: 100,
   logoScale: 100,
+  logoX: 0,
+  logoY: 0,
   topSpacing: 14,
   bgOpacity: 18,
   bgSize: 100,
@@ -80,5 +104,6 @@ export const DEFAULT_STATE: AppState = {
   onboardingDone: false,
   logoNoBg: false,
   sponsorNoBg: false,
+  showHeader: true,
   ratio: 'story',
 };

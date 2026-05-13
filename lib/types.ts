@@ -1,9 +1,13 @@
 export type TemplateId = 'matchday' | 'results' | 'performer' | 'signing' | 'weekend' | 'squad' | 'notice' | 'sponsor' | 'custom' | 'monthly';
 export type StyleId = 'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'aa'|'ab'|'ac'|'ad'|'ae'|'af'|'ag'|'ah'|'ai'|'aj'|'ak'|'al'|'am'|'an'|'ao'|'ap'|'aq'|'ar'|'as'|'at'|'au'|'av'|'aw'|'ax'|'ay'|'az'|'ba'|'bb'|'bc'|'bd'|'be'|'bf'|'bg'|'bh'|'bi'|'bj';
 
+export type PerformerLayout = '4-player' | '3-player' | '2-player' | '2-player-large' | '1-player-hero';
+
 export interface AppState {
   template: TemplateId;
   style: StyleId;
+  performerLayout: PerformerLayout;
+  sectionOrder: string[];
   palette: string;
   clubName: string;
   clubTagline: string;
@@ -40,13 +44,21 @@ export interface AppState {
   sponsorLayout: 'featured'|'compact'|'row'|'centred';
   sponsorCount: string;
   // adjustments (CSS vars)
-  titleScale: number;    // 50-200, default 100
-  fixtureScale: number;  // 50-200
-  metaScale: number;     // 50-200
-  badgeScale: number;    // 50-200
-  sponsorScale: number;  // 35-200
-  logoScale: number;     // 20-200
-  topSpacing: number;    // 0-34
+  titleScale: number;      // 50-200, default 100
+  titleTopScale: number;   // headline line 1 size 50-200
+  titleBotScale: number;   // headline line 2 size 50-200
+  headlineX: number;       // headline horizontal offset -100 to 100
+  headlineY: number;       // headline vertical offset -100 to 100
+  headlineSpacing: number; // letter-spacing multiplier 50-200
+  detailScale: number;     // details text size 50-200
+  fixtureScale: number;    // 50-200
+  metaScale: number;       // 50-200
+  badgeScale: number;      // 50-200
+  sponsorScale: number;    // 35-200
+  logoScale: number;       // 20-200
+  logoX: number;           // logo horizontal offset -100 to 100
+  logoY: number;           // logo vertical offset -100 to 100
+  topSpacing: number;      // 0-34
   bgOpacity: number;     // 0-100
   bgSize: number;        // 10-300
   bgPosX: number;        // 0-100
@@ -63,5 +75,6 @@ export interface AppState {
   onboardingDone: boolean;
   logoNoBg: boolean;
   sponsorNoBg: boolean;
+  showHeader: boolean;
   ratio: 'story' | 'fourfive' | 'square' | 'landscape';
 }
