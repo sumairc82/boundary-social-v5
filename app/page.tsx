@@ -601,7 +601,7 @@ export default function Home() {
     setExporting(true);
     try {
       const slug = state.clubName.replace(/\s+/g, '-').toLowerCase();
-      await exportPoster(posterRef.current, `${slug}-${state.template}.jpg`);
+      await exportPoster(posterRef.current, `${slug}-${state.template}.jpg`, pr);
     } finally { setExporting(false); }
   };
 
@@ -1064,6 +1064,30 @@ export default function Home() {
             <span>{studioMode ? '✏️' : '⬡'}</span>
             {studioMode ? 'Studio ON' : 'Studio'}
           </button>
+          {/* Quick photo add */}
+          <label style={{ fontSize:11, padding:'5px 10px', background:'transparent', color:'#9099b5', border:'1px solid #2d3248', borderRadius:20, cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', gap:5 }} title="Add image(s) to poster">
+            🖼 Photo
+            <input type="file" accept="image/*" multiple style={{ display:'none' }}
+              onChange={e => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+                const existing = state.imageLayers || [];
+                const newLayers: ImageLayer[] = [];
+                let loaded = 0;
+                files.forEach((file, idx) => {
+                  const reader = new FileReader();
+                  reader.onload = ev => {
+                    const maxZ = existing.length ? Math.max(...existing.map((l: ImageLayer) => l.zIndex)) : 0;
+                    newLayers[idx] = { id: `img-${Date.now()}-${idx}`, dataUrl: ev.target?.result as string, x: 50, y: 50, scale: 60, zIndex: maxZ + idx + 1, flipH: false };
+                    loaded++;
+                    if (loaded === files.length) onChange({ imageLayers: [...existing, ...newLayers.filter(Boolean)] });
+                  };
+                  reader.readAsDataURL(file);
+                });
+                e.target.value = '';
+              }}
+            />
+          </label>
           <button onClick={() => handleExport(pixelRatio)} disabled={exporting}
             style={{ fontSize:12, fontWeight:800, padding:'6px 16px', background:C.gold, color:C.goldText, border:'none', borderRadius:7, cursor:'pointer', opacity: exporting?0.5:1, fontFamily:'inherit' }}>
             {exporting ? 'Exporting…' : 'Export JPG'}

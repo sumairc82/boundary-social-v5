@@ -439,19 +439,53 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 
 .sponsor-wall.featured.multi {
   display: grid;
-  grid-template-columns: minmax(calc(84px * var(--sponsor-scale, 1)), calc(116px * var(--sponsor-scale, 1))) 1fr;
+  grid-template-columns: calc(var(--sp-main-w, 80px) * var(--sponsor-scale, 1)) 1fr;
   gap: calc(4px * var(--sponsor-scale, 1));
   align-items: stretch;
   width: 100%;
 }
-.sponsor-wall.featured.multi .sponsor-main { height: 100%; min-height: calc(58px * var(--sponsor-scale, 1)); }
+.sponsor-wall.featured.multi .sponsor-main { height: 100% !important; min-height: calc(58px * var(--sponsor-scale, 1)); }
 .sponsor-wall.featured.multi .sponsors {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(calc(34px * var(--sponsor-scale, 1)), 1fr));
   gap: calc(3px * var(--sponsor-scale, 1));
   align-content: stretch;
+  width: 100%;
 }
 .sponsor-wall.featured.multi .sponsor { width: 100%; height: calc(var(--sponsor-h, 22px) * var(--sponsor-scale, 1)); }
+/* Use same responsive columns as .multi */
+.sponsor-wall.featured.multi[data-partners="1"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="2"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="3"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 36px; }
+.sponsor-wall.featured.multi[data-partners="4"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="5"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="6"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 28px; }
+.sponsor-wall.featured.multi[data-partners="7"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="8"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="9"] .sponsors { grid-template-columns: repeat(4,1fr); --sponsor-h: 24px; }
+.sponsor-wall.featured.multi[data-partners="10"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="11"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="12"] .sponsors { grid-template-columns: repeat(4,1fr); --sponsor-h: 20px; }
+.sponsor-wall.featured.multi[data-partners="13"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="14"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="15"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="16"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="17"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="18"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="19"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="20"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="21"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="22"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="23"] .sponsors,
+.sponsor-wall.featured.multi[data-partners="24"] .sponsors { grid-template-columns: repeat(5,1fr); --sponsor-h: 18px; }
+.sponsor-wall.featured.multi[data-partners="1"],
+.sponsor-wall.featured.multi[data-partners="2"],
+.sponsor-wall.featured.multi[data-partners="3"] { --sp-main-w: 88px; }
+.sponsor-wall.featured.multi[data-partners="4"],
+.sponsor-wall.featured.multi[data-partners="5"],
+.sponsor-wall.featured.multi[data-partners="6"],
+.sponsor-wall.featured.multi[data-partners="7"],
+.sponsor-wall.featured.multi[data-partners="8"],
+.sponsor-wall.featured.multi[data-partners="9"] { --sp-main-w: 76px; }
 
 /* All alternate layouts hide main sponsor */
 .sponsor-wall.compact .sponsor-main,
