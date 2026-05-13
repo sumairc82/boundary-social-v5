@@ -1,7 +1,7 @@
 import { AppState } from './types';
 const KEY = 'boundary-social-v5';
 const VERSION_KEY = 'boundary-social-v5-version';
-const CURRENT_VERSION = '4'; // bump to force-clear stale state
+const CURRENT_VERSION = '5'; // bump to force-clear stale state
 
 export const saveState = (s: AppState) => {
   try {

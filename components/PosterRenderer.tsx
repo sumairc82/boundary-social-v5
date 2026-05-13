@@ -22,6 +22,7 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
     '--detail-scale': (s.detailScale ?? 100) / 100,
     '--badge-box': `${52 * s.badgeScale / 100}px`,
     '--sponsor-scale': s.sponsorScale / 100,
+    ...(s.sponsorHeight ? { '--sponsor-h-override': `${s.sponsorHeight}px` } : {}),
     '--logo-scale': s.logoScale / 100,
     '--logo-x': `${s.logoX ?? 0}px`,
     '--logo-y': `${s.logoY ?? 0}px`,
@@ -259,15 +260,25 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
       <p class="team" style="white-space:pre-line">${esc(s.noticeText)}</p>
     </section>`;
 
-  // ── Footer — V1-faithful sponsor wall ──
+  // ── Sponsor wall — featured shows main sponsor on left ──
   const buildSponsorWall = (sponsors: typeof s.sponsors, layout: string) => {
     if (!sponsors.length) return '';
-    // V1: showMain is always false — all sponsors go to partners, wall gets no-main class
-    const total = sponsors.length;
-    const wallClass = `${layout} no-main`;
     const logoBox = (sp: typeof sponsors[0]) => sp.logo
       ? `<div class="logo-bg" style="background-image:url('${sp.logo}')"></div>`
       : `<div class="logo-bg text-only">${esc(sp.name)}</div>`;
+
+    // featured: first sponsor is main (left), rest are partners (grid right)
+    if (layout === 'featured' && sponsors.length >= 2) {
+      const main = sponsors[0];
+      const partners = sponsors.slice(1);
+      const partnerCount = partners.length;
+      const wallClass = `featured multi`;
+      return `<div class="sponsor-wall ${wallClass}" data-count="${sponsors.length}" data-partners="${partnerCount}"><div class="sponsor-main">${logoBox(main)}</div><div class="sponsors">${partners.map(sp => `<div class="sponsor">${logoBox(sp)}</div>`).join('')}</div></div>`;
+    }
+
+    // all other layouts: no main, all equal
+    const total = sponsors.length;
+    const wallClass = `${layout} no-main`;
     return `<div class="sponsor-wall ${wallClass}" data-count="${total}"><div class="sponsor-main"></div><div class="sponsors">${sponsors.map(sp => `<div class="sponsor">${logoBox(sp)}</div>`).join('')}</div></div>`;
   };
 

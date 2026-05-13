@@ -84,6 +84,7 @@ export const DEFAULT_STATE: AppState = {
   metaScale: 100,
   badgeScale: 100,
   sponsorScale: 100,
+  sponsorHeight: 0,
   logoScale: 100,
   logoX: 0,
   logoY: 0,

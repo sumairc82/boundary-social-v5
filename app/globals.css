@@ -81,7 +81,7 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .no-header .top { visibility: hidden; overflow: hidden; max-height: 0; }
 
 /* Data section (cards/list/grid) moves independently of headline title-block */
-.list, .card, .squad-layout {
+.list, .card, .squad-layout, .feature-grid {
   transform: translate(var(--content-x, 0px), var(--content-y, 0px)) scale(var(--content-scale, 1));
   transform-origin: center center;
 }
@@ -855,3 +855,11 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .detail {
   font-size: calc(10px * var(--meta-scale, 1) * var(--detail-scale, 1));
 }
+/* Row text (fixtures/results) respects meta-scale */
+.row-title { font-size: calc(12.5px * var(--fixture-scale, 1)) !important; }
+.row-meta  { font-size: calc(10px * var(--meta-scale, 1)) !important; }
+.view-results .row-title { font-size: calc(16px * var(--fixture-scale, 1)) !important; }
+.view-results .row-meta  { font-size: calc(12px * var(--meta-scale, 1)) !important; }
+/* Sponsor tile height override (only when sponsorHeight > 0) */
+.poster[style*="--sponsor-h-override"] .sponsor { height: var(--sponsor-h-override) !important; }
+.poster[style*="--sponsor-h-override"] .sponsor-main { height: calc(var(--sponsor-h-override) * 1.5) !important; }

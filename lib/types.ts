@@ -65,6 +65,7 @@ export interface AppState {
   metaScale: number;       // 50-200
   badgeScale: number;      // 50-200
   sponsorScale: number;    // 35-200
+  sponsorHeight: number;   // tile height in px, 0=auto
   logoScale: number;       // 20-200
   logoX: number;           // logo horizontal offset -100 to 100
   logoY: number;           // logo vertical offset -100 to 100

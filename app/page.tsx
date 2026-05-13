@@ -497,8 +497,10 @@ function AdjustPanelContent({ state, onChange }: { state: AppState; onChange: (p
       {state.sponsors.length > 0 && (
         <>
           <div style={S.divider} />
-          <div style={S.secTitle}>Sponsor Scale</div>
-          <SliderField label="Sponsor Scale" value={state.sponsorScale} min={35} max={200} onChange={v => onChange({sponsorScale:v})} />
+          <div style={S.secTitle}>Sponsor Tiles</div>
+          <SliderField label="Overall Scale" value={state.sponsorScale} min={35} max={200} onChange={v => onChange({sponsorScale:v})} />
+          <SliderField label="Tile Height (px)" value={state.sponsorHeight ?? 0} min={0} max={120} onChange={v => onChange({sponsorHeight:v})} />
+          <div style={{ fontSize:9, color:'#5a6a8a' }}>0 = auto height</div>
         </>
       )}
 
@@ -995,6 +997,17 @@ export default function Home() {
         <span style={{ fontSize:10, background:'#1e2130', color:'#7c87a6', border:'1px solid #2e3348', borderRadius:4, padding:'2px 7px', fontFamily:'monospace' }}>
           {state.palette}
         </span>
+        {/* Aspect ratio — always visible */}
+        <div style={{ display:'flex', gap:3, alignItems:'center', background:'#21253a', borderRadius:8, padding:'3px 5px' }}>
+          {([{id:'story',label:'9:16'},{id:'fourfive',label:'4:5'},{id:'square',label:'1:1'},{id:'landscape',label:'16:9'}] as const).map(r => (
+            <button key={r.id} onClick={() => onChange({ratio:r.id})} style={{
+              padding:'3px 7px', borderRadius:5, fontSize:10, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
+              background: state.ratio===r.id ? C.gold : 'transparent',
+              border: `1px solid ${state.ratio===r.id ? C.gold : 'transparent'}`,
+              color: state.ratio===r.id ? C.goldText : '#6b7494',
+            }}>{r.label}</button>
+          ))}
+        </div>
         {/* Zoom controls */}
         <div style={{ display:'flex', alignItems:'center', gap:4, background:'#21253a', borderRadius:8, padding:'2px 4px' }}>
           {(() => {
