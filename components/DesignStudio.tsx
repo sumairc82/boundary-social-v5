@@ -27,16 +27,23 @@ const TARGET_CLASSES = ['top', 'title-block', 'card', 'list', 'feature-grid', 'p
   'crest-lockup', 'content'];
 
 // 8 resize handle positions
-const HANDLES = [
-  { id: 'nw', cursor: 'nw-resize', left: -5, top: -5 },
-  { id: 'n',  cursor: 'n-resize',  left: '50%', top: -5 },
-  { id: 'ne', cursor: 'ne-resize', right: -5, top: -5 },
-  { id: 'e',  cursor: 'e-resize',  right: -5, top: '50%' },
-  { id: 'se', cursor: 'se-resize', right: -5, bottom: -5 },
-  { id: 's',  cursor: 's-resize',  left: '50%', bottom: -5 },
-  { id: 'sw', cursor: 'sw-resize', left: -5, bottom: -5 },
-  { id: 'w',  cursor: 'w-resize',  left: -5, top: '50%' },
-] as const;
+interface HandleDef {
+  id: string;
+  cursor: string;
+  style: React.CSSProperties;
+}
+const HS = 9; // handle size px
+const MID = `calc(50% - ${HS/2}px)`;
+const HANDLES: HandleDef[] = [
+  { id: 'nw', cursor: 'nw-resize', style: { left: -HS/2, top: -HS/2 } },
+  { id: 'n',  cursor: 'n-resize',  style: { left: MID,   top: -HS/2 } },
+  { id: 'ne', cursor: 'ne-resize', style: { right: -HS/2, top: -HS/2 } },
+  { id: 'e',  cursor: 'e-resize',  style: { right: -HS/2, top: MID } },
+  { id: 'se', cursor: 'se-resize', style: { right: -HS/2, bottom: -HS/2 } },
+  { id: 's',  cursor: 's-resize',  style: { left: MID,    bottom: -HS/2 } },
+  { id: 'sw', cursor: 'sw-resize', style: { left: -HS/2, bottom: -HS/2 } },
+  { id: 'w',  cursor: 'w-resize',  style: { left: -HS/2, top: MID } },
+];
 
 export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
   const [selected, setSelected] = useState<SelectedEl[]>([]);
@@ -211,7 +218,6 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
   if (!active) return null;
 
   const primary = selected[0] ?? null;
-  const HANDLE_SIZE = 9;
 
   return (
     <>
@@ -254,12 +260,8 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
               onMouseDown={e => onResizeMouseDown(e, h.id)}
               style={{
                 position: 'absolute',
-                left: typeof h.left === 'number' ? h.left - HANDLE_SIZE / 2 : undefined,
-                right: 'right' in h && typeof h.right === 'number' ? h.right - HANDLE_SIZE / 2 : undefined,
-                top: typeof h.top === 'number' ? h.top - HANDLE_SIZE / 2 : h.top === '50%' ? `calc(50% - ${HANDLE_SIZE/2}px)` : undefined,
-                bottom: 'bottom' in h && typeof h.bottom === 'number' ? h.bottom - HANDLE_SIZE / 2 : undefined,
-                left: h.id === 'n' || h.id === 's' ? `calc(50% - ${HANDLE_SIZE/2}px)` : typeof h.left === 'number' ? h.left - HANDLE_SIZE/2 : undefined,
-                width: HANDLE_SIZE, height: HANDLE_SIZE,
+                ...h.style,
+                width: HS, height: HS,
                 background: '#fff', border: '2px solid #fbbf24',
                 borderRadius: 2, cursor: h.cursor,
                 pointerEvents: 'auto', zIndex: 55,
