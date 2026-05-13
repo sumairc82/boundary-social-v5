@@ -104,6 +104,7 @@ export const DEFAULT_STATE: AppState = {
   onboardingDone: false,
   logoNoBg: false,
   sponsorNoBg: false,
-  showHeader: true,
+  showHeader: false,
+  contentY: 0,
   ratio: 'story',
 };

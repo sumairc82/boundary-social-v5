@@ -79,6 +79,9 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 }
 .no-header .top { display: none; }
 
+/* Middle section vertical offset */
+.content { transform: translateY(var(--content-y, 0px)); }
+
 .top {
   display: flex;
   justify-content: space-between;

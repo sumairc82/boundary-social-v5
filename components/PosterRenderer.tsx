@@ -31,6 +31,7 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
     '--headline-x': `${s.headlineX ?? 0}px`,
     '--headline-y': `${s.headlineY ?? 0}px`,
     '--headline-ls': `${((s.headlineSpacing ?? 100) - 100) * 0.008}em`,
+    '--content-y': `${s.contentY ?? 0}px`,
     '--user-text': s.textColor || '#ffffff',
     '--user-accent': s.accentColor || 'var(--gold)',
     '--user-accent-soft': s.accentColor || 'var(--gold-soft)',

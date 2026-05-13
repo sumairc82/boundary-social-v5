@@ -405,6 +405,14 @@ function AdjustPanelContent({ state, onChange }: { state: AppState; onChange: (p
       )}
 
       <div style={S.divider} />
+      <div style={S.secTitle}>Content Section Position</div>
+      <SliderField label="Middle Section Up / Down" value={state.contentY ?? 0} min={-300} max={300} onChange={v => onChange({contentY:v})} />
+      <button onClick={() => onChange({contentY:0})}
+        style={{ fontSize:10, color:'#fbbf24', background:'#1e2235', border:'1px solid #2d3248', borderRadius:5, padding:'4px 8px', cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-start' }}>
+        ↺ Reset
+      </button>
+
+      <div style={S.divider} />
       <div style={S.secTitle}>Headline Position</div>
       <SliderField label="Headline Left / Right" value={state.headlineX ?? 0} min={-160} max={160} onChange={v => onChange({headlineX:v})} />
       <SliderField label="Headline Up / Down" value={state.headlineY ?? 0} min={-160} max={160} onChange={v => onChange({headlineY:v})} />
