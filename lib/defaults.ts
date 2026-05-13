@@ -43,7 +43,7 @@ export const DEFAULT_STATE: AppState = {
     { name: 'T. Clarke',  role: 'All-Rounder',   stat: '45 & 2/30',    photoDataUrl: '' },
     { name: 'S. Wells',   role: 'Wicket-keeper', stat: '34* & 2 ct',   photoDataUrl: '' },
   ],
-  playerCount: 2,
+  playerCount: 4,
   signingName: 'J. Hartley',
   signingRole: 'All-Rounder',
   signingNote: 'Joining from Thornton CC. Welcome to the club!',

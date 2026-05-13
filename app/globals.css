@@ -77,8 +77,8 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .poster-inner footer  { grid-row: 3; }
 
 /* When header is hidden: collapse its row, hide it, content fills from top */
-.no-header .poster-inner { grid-template-rows: 0px 1fr auto; gap: 0; }
-.no-header .top { visibility: hidden; overflow: hidden; max-height: 0; }
+.no-header .poster-inner { grid-template-rows: 0fr 1fr auto !important; gap: 0 !important; }
+.no-header .top { display: none !important; }
 
 /* Data section (cards/list/grid) moves independently of headline title-block */
 .list, .card, .squad-layout, .feature-grid {
@@ -343,10 +343,14 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 /* logo-bg: fills its container via absolute positioning */
 .logo-bg {
   position: absolute;
-  inset: calc(3px * var(--sponsor-scale, 1));
+  inset: 2px;
   background-position: center;
-  background-size: contain;
+  background-size: 85%;
   background-repeat: no-repeat;
+}
+.sponsor-main .logo-bg {
+  inset: 4px;
+  background-size: 80%;
 }
 .logo-bg.text-only {
   display: flex; align-items: center; justify-content: center;

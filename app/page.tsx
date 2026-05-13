@@ -642,7 +642,10 @@ export default function Home() {
                     { id: '2-player-large', label: '2 Players (full-width)' },
                     { id: '1-player-hero', label: '1 Player (hero)' },
                   ] as const).map(l => (
-                    <button key={l.id} onClick={() => onChange({ performerLayout: l.id })} style={{
+                    <button key={l.id} onClick={() => {
+                      const countMap: Record<string,number> = {'4-player':4,'3-player':3,'2-player':2,'2-player-large':2,'1-player-hero':1};
+                      onChange({ performerLayout: l.id, playerCount: countMap[l.id] ?? 4 });
+                    }} style={{
                       padding: '7px 10px', borderRadius: 6, fontSize: 11, textAlign: 'left',
                       cursor: 'pointer', fontFamily: 'inherit',
                       background: state.performerLayout === l.id ? C.gold : C.btnBg,
