@@ -51,7 +51,7 @@ export interface AppState {
   noticeText: string;
   // sponsors
   sponsors: { name: string; logo: string }[];
-  sponsorLayout: 'featured'|'compact'|'row'|'centred';
+  sponsorLayout: 'featured'|'compact'|'row'|'centred'|'left'|'stacked';
   sponsorCount: string;
   // adjustments (CSS vars)
   titleScale: number;      // 50-200, default 100

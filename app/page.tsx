@@ -347,10 +347,12 @@ function SponsorsPanel({ state, onChange }: { state: AppState; onChange: (p: Par
       <div style={S.field}>
         <label style={S.label}>Layout</label>
         <select value={state.sponsorLayout} onChange={e => onChange({sponsorLayout: e.target.value as AppState['sponsorLayout']})} style={S.input}>
-          <option value="featured">Main featured + partners grid</option>
-          <option value="compact">Compact grid (equal tiles)</option>
+          <option value="featured">Auto grid (adapts to count)</option>
+          <option value="compact">Compact 6-per-row grid</option>
           <option value="row">Single row</option>
-          <option value="centred">Centred rows</option>
+          <option value="centred">Centred wrap</option>
+          <option value="left">Left aligned wrap</option>
+          <option value="stacked">Stacked full width</option>
         </select>
       </div>
       <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer' }}>
@@ -1202,9 +1204,7 @@ export default function Home() {
                 </div>
               )}
               {studioMode && (
-                <div style={{ position:'absolute', inset:0, zIndex:40, pointerEvents:'none' }}>
-                  <DesignStudio active={studioMode} posterRef={posterRef} zoom={zoom} />
-                </div>
+                <DesignStudio active={studioMode} posterRef={posterRef} zoom={zoom} />
               )}
             </div>
           </div>

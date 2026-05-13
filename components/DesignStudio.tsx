@@ -11,8 +11,8 @@ interface SelectedEl {
   origHeight: string;
   tx: number;
   ty: number;
-  w: number;  // current CSS width override (0 = not set)
-  h: number;  // current CSS height override (0 = not set)
+  w: number;
+  h: number;
 }
 
 interface Props {
@@ -21,34 +21,15 @@ interface Props {
   zoom?: number;
 }
 
-const SKIP_CLASSES = ['poster', 'poster-bg-image'];
-// 'content' = the <main> wrapper; 'top' = header bar; title-block, card, list etc = sections
+const SKIP_CLASSES = ['poster', 'poster-bg-image', 'poster-inner'];
 const TARGET_CLASSES = [
-  'content',       // entire middle section (title + fixtures/results/players)
-  'top',           // header bar
-  'title-block',   // headline block
-  'card',          // matchday card
-  'list',          // fixture/result list
-  'feature-grid',  // performer grid
-  'player-card',   // individual player card
-  'partner-card',
-  'footer',
-  'squad-layout',
-  'title',
-  'team',
-  'club',
-  'chips',
-  'crest',
-  'crest-lockup',
+  'top', 'content', 'title-block', 'card', 'list', 'feature-grid',
+  'player-card', 'partner-card', 'footer', 'squad-layout', 'title',
+  'team', 'club', 'chips', 'crest', 'crest-lockup',
 ];
 
-// 8 resize handle positions
-interface HandleDef {
-  id: string;
-  cursor: string;
-  style: React.CSSProperties;
-}
-const HS = 9; // handle size px
+interface HandleDef { id: string; cursor: string; style: React.CSSProperties; }
+const HS = 10;
 const MID = `calc(50% - ${HS/2}px)`;
 const HANDLES: HandleDef[] = [
   { id: 'nw', cursor: 'nw-resize', style: { left: -HS/2, top: -HS/2 } },
@@ -66,6 +47,7 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
   const dragging = useRef(false);
   const resizing = useRef<{ handle: string; startMx: number; startMy: number; origRect: Rect; origW: number; origH: number; origTx: number; origTy: number } | null>(null);
   const shiftHeld = useRef(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const getRelRect = useCallback((el: HTMLElement): Rect => {
     const poster = posterRef.current;
@@ -88,65 +70,77 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
     return () => { document.removeEventListener('keydown', dn); document.removeEventListener('keyup', up); };
   }, []);
 
-  // Click-to-select (attached to document, checks posterRef at call-time)
-  useEffect(() => {
-    if (!active) { setSelected([]); return; }
+  // Clear selection when deactivated
+  useEffect(() => { if (!active) setSelected([]); }, [active]);
 
-    const handleClick = (e: MouseEvent) => {
-      const poster = posterRef.current;
-      if (!poster) return;
-      const target = e.target as HTMLElement;
-      if (!poster.contains(target)) return;
-      if ((target as HTMLElement).closest?.('[data-studio-ui]')) return;
-
-      let el: HTMLElement | null = target;
-      while (el && el !== poster) {
-        if (SKIP_CLASSES.some(c => el!.classList.contains(c))) { el = el.parentElement; continue; }
-        if (TARGET_CLASSES.some(c => el!.classList.contains(c))) break;
-        el = el.parentElement;
-      }
-      if (!el || el === poster) { setSelected([]); return; }
-
-      const existing = el.style.transform || '';
-      const match = existing.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
-      const tx = match ? parseFloat(match[1]) : 0;
-      const ty = match ? parseFloat(match[2]) : 0;
-      const origTransform = existing.replace(/translate\([^)]+\)/, '').trim();
-      const currentW = parseFloat(el.style.width) || 0;
-      const currentH = parseFloat(el.style.height) || 0;
-
-      const newItem: SelectedEl = {
-        el, rect: getRelRect(el),
-        origTransform,
-        origWidth: el.style.width || '',
-        origHeight: el.style.height || '',
-        tx, ty, w: currentW, h: currentH,
-      };
-
-      if (shiftHeld.current) {
-        setSelected(prev => {
-          const idx = prev.findIndex(s => s.el === el);
-          return idx >= 0 ? prev.filter((_, i) => i !== idx) : [...prev, newItem];
-        });
-      } else {
-        setSelected([newItem]);
-      }
-    };
-
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, [active, posterRef, getRelRect]);
-
-  // Refresh rects periodically
+  // Refresh rects
   useEffect(() => {
     if (!selected.length) return;
     const id = setInterval(() => {
       setSelected(prev => prev.map(s => ({ ...s, rect: getRelRect(s.el) })));
     }, 100);
     return () => clearInterval(id);
-  }, [selected, getRelRect]);
+  }, [selected.length, getRelRect]);
 
-  // ── DRAG to move ──
+  // The OVERLAY itself captures the click (pointerEvents:auto on parent),
+  // then we use elementsFromPoint to find the poster element underneath
+  const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+    const poster = posterRef.current;
+    if (!poster) return;
+
+    // Ignore clicks on studio UI elements (handles, toolbar)
+    const t = e.target as HTMLElement;
+    if (t.closest('[data-studio-ui]')) return;
+
+    // Find all elements at this viewport point, skip the overlay itself
+    const elems = document.elementsFromPoint(e.clientX, e.clientY) as HTMLElement[];
+    const posterEls = elems.filter(el =>
+      poster.contains(el) &&
+      !el.hasAttribute('data-studio-ui') &&
+      !SKIP_CLASSES.some(c => el.classList.contains(c))
+    );
+
+    // Walk up from deepest element to find a TARGET_CLASS match
+    let found: HTMLElement | null = null;
+    for (const el of posterEls) {
+      let cur: HTMLElement | null = el;
+      while (cur && cur !== poster) {
+        if (SKIP_CLASSES.some(c => cur!.classList.contains(c))) { cur = cur.parentElement; continue; }
+        if (TARGET_CLASSES.some(c => cur!.classList.contains(c))) { found = cur; break; }
+        cur = cur.parentElement;
+      }
+      if (found) break;
+    }
+
+    if (!found) { setSelected([]); return; }
+
+    const existing = found.style.transform || '';
+    const match = existing.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
+    const tx = match ? parseFloat(match[1]) : 0;
+    const ty = match ? parseFloat(match[2]) : 0;
+    const origTransform = existing.replace(/translate\([^)]+\)/, '').trim();
+
+    const newItem: SelectedEl = {
+      el: found, rect: getRelRect(found),
+      origTransform,
+      origWidth: found.style.width || '',
+      origHeight: found.style.height || '',
+      tx, ty,
+      w: parseFloat(found.style.width) || 0,
+      h: parseFloat(found.style.height) || 0,
+    };
+
+    if (shiftHeld.current) {
+      setSelected(prev => {
+        const idx = prev.findIndex(s => s.el === found);
+        return idx >= 0 ? prev.filter((_, i) => i !== idx) : [...prev, newItem];
+      });
+    } else {
+      setSelected([newItem]);
+    }
+  }, [posterRef, getRelRect]);
+
+  // ── DRAG ──
   const onDragMouseDown = useCallback((e: React.MouseEvent) => {
     if (!selected.length) return;
     e.preventDefault(); e.stopPropagation();
@@ -173,7 +167,7 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
     document.addEventListener('mouseup', onUp);
   }, [selected, zoom]);
 
-  // ── RESIZE handle mousedown ──
+  // ── RESIZE ──
   const onResizeMouseDown = useCallback((e: React.MouseEvent, handleId: string) => {
     if (selected.length !== 1) return;
     e.preventDefault(); e.stopPropagation();
@@ -185,39 +179,26 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
 
     const onMove = (ev: MouseEvent) => {
       if (!resizing.current) return;
-      const { handle, startMx, startMy, origRect: oR, origW: oW, origH: oH, origTx: oTx, origTy: oTy } = resizing.current;
+      const { handle, startMx, startMy, origW: oW, origH: oH, origTx: oTx, origTy: oTy } = resizing.current;
       const rawDx = (ev.clientX - startMx) / zoom;
       const rawDy = (ev.clientY - startMy) / zoom;
-
       let newW = oW, newH = oH, newTx = oTx, newTy = oTy;
-
-      // Width changes
       if (handle.includes('e')) newW = Math.max(40, oW + rawDx);
       if (handle.includes('w')) { newW = Math.max(40, oW - rawDx); newTx = oTx + rawDx; }
-      // Height changes
       if (handle.includes('s')) newH = Math.max(20, oH + rawDy);
       if (handle.includes('n')) { newH = Math.max(20, oH - rawDy); newTy = oTy + rawDy; }
-
       s.el.style.width = `${newW}px`;
       s.el.style.height = `${newH}px`;
       s.el.style.transform = `translate(${newTx}px,${newTy}px) ${s.origTransform}`.trim();
-
       setSelected(prev => prev.map(item =>
-        item.el === s.el
-          ? { ...item, w: newW, h: newH, tx: newTx, ty: newTy, rect: { ...oR, width: newW, height: newH } }
-          : item
+        item.el === s.el ? { ...item, w: newW, h: newH, tx: newTx, ty: newTy, rect: getRelRect(s.el) } : item
       ));
     };
-
     const onUp = () => {
       resizing.current = null;
-      setSelected(prev => prev.map(item =>
-        item.el === s.el ? { ...item, rect: getRelRect(item.el) } : item
-      ));
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
-
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   }, [selected, zoom, getRelRect]);
@@ -236,7 +217,13 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
   const primary = selected[0] ?? null;
 
   return (
-    <>
+    // KEY CHANGE: overlay has pointer-events:auto so it CAPTURES clicks
+    // then we use elementsFromPoint to find what's underneath
+    <div
+      ref={overlayRef}
+      style={{ position: 'absolute', inset: 0, zIndex: 40, cursor: selected.length ? 'default' : 'crosshair' }}
+      onClick={handleOverlayClick}
+    >
       {/* Hint */}
       {!selected.length && (
         <div data-studio-ui style={{
@@ -244,11 +231,10 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
           background: 'rgba(251,191,36,0.95)', color: '#000', fontSize: 11, fontWeight: 700,
           padding: '5px 16px', borderRadius: 20, pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 100,
         }}>
-          ✛ Click to select · Shift+Click multi-select · Drag corners to resize
+          ✛ Click to select · Shift+Click multi · Drag ✛ to move · Corners to resize
         </div>
       )}
 
-      {/* Multi-select count */}
       {selected.length > 1 && (
         <div data-studio-ui style={{
           position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
@@ -260,7 +246,7 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
       )}
 
       {selected.map((s, i) => (
-        <div key={i} style={{
+        <div key={i} data-studio-ui style={{
           position: 'absolute',
           left: s.rect.x - 2, top: s.rect.y - 2,
           width: s.rect.width + 4, height: s.rect.height + 4,
@@ -268,15 +254,13 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
           borderRadius: 3, pointerEvents: 'none', zIndex: 50,
           boxShadow: '0 0 0 1px rgba(0,0,0,0.5)',
         }}>
-          {/* Resize handles — only on primary (first selected) */}
           {i === 0 && HANDLES.map(h => (
             <div
               key={h.id}
               data-studio-ui
-              onMouseDown={e => onResizeMouseDown(e, h.id)}
+              onMouseDown={e => { e.stopPropagation(); onResizeMouseDown(e, h.id); }}
               style={{
-                position: 'absolute',
-                ...h.style,
+                position: 'absolute', ...h.style,
                 width: HS, height: HS,
                 background: '#fff', border: '2px solid #fbbf24',
                 borderRadius: 2, cursor: h.cursor,
@@ -288,14 +272,14 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
         </div>
       ))}
 
-      {/* Drag toolbar */}
       {primary && (
         <div
           data-studio-ui
+          onClick={e => e.stopPropagation()}
           style={{
             position: 'absolute',
-            left: Math.max(0, primary.rect.x + primary.rect.width / 2 - 80),
-            top: Math.max(0, primary.rect.y - 46),
+            left: Math.max(0, primary.rect.x + primary.rect.width / 2 - 90),
+            top: Math.max(0, primary.rect.y - 48),
             zIndex: 60, display: 'flex', gap: 2, alignItems: 'center',
             background: '#0f1120', border: '1.5px solid #fbbf24',
             borderRadius: 24, padding: '5px 10px',
@@ -304,7 +288,8 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
           }}
         >
           <div
-            onMouseDown={onDragMouseDown}
+            data-studio-ui
+            onMouseDown={e => { e.stopPropagation(); onDragMouseDown(e); }}
             style={{
               cursor: 'grab', padding: '3px 8px', fontSize: 15,
               userSelect: 'none', color: '#fbbf24',
@@ -318,16 +303,20 @@ export default function DesignStudio({ active, posterRef, zoom = 1 }: Props) {
             {Math.round(primary.rect.width)}×{Math.round(primary.rect.height)}
           </div>
           <div style={{ width: 1, height: 16, background: '#2d3248', margin: '0 2px' }} />
-          <button onClick={onReset}
+          <button
+            data-studio-ui
+            onClick={e => { e.stopPropagation(); onReset(); }}
             style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#8899bb', padding:'2px 5px' }}>
             ↺
           </button>
-          <button onClick={() => setSelected([])}
+          <button
+            data-studio-ui
+            onClick={e => { e.stopPropagation(); setSelected([]); }}
             style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#6b7494', padding:'2px 5px' }}>
             ✕
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }

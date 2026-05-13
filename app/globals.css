@@ -369,10 +369,10 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
   background: transparent !important;
 }
 
-/* ─── DEFAULT: 1–3 sponsors — stacked/side-by-side ─── */
+/* ─── SPONSOR WALL — V1-faithful ─── */
 .sponsor-wall {
   display: flex; flex-direction: column;
-  gap: calc(3px * var(--sponsor-scale, 1)); width: 100%; overflow: hidden;
+  gap: calc(4px * var(--sponsor-scale, 1)); width: 100%; overflow: hidden;
 }
 .sponsor-main { height: calc(52px * var(--sponsor-scale, 1)); flex-shrink: 0; }
 .sponsor      { height: calc(var(--sponsor-h, 26px) * var(--sponsor-scale, 1)); }
@@ -384,11 +384,58 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 
 .sponsor-wall[data-count="1"] .sponsor-main { height: calc(72px * var(--sponsor-scale, 1)); }
 .sponsor-wall[data-count="1"] .sponsors     { display: none; }
-
 .sponsor-wall[data-count="2"] .sponsor-main,
 .sponsor-wall[data-count="3"] .sponsor-main { height: calc(52px * var(--sponsor-scale, 1)); }
 .sponsor-wall[data-count="2"] .sponsors,
 .sponsor-wall[data-count="3"] .sponsors     { --sponsor-h: 48px; }
+
+/* 4+ sponsors: two-column layout */
+.sponsor-wall.multi {
+  display: grid;
+  grid-template-columns: calc(var(--sp-main-w, 72px) * var(--sponsor-scale, 1)) 1fr;
+  align-items: stretch;
+  gap: calc(4px * var(--sponsor-scale, 1));
+}
+.sponsor-wall.multi .sponsor-main { height: 100%; min-height: calc(60px * var(--sponsor-scale, 1)); }
+.sponsor-wall.multi .sponsors {
+  display: grid;
+  gap: calc(3px * var(--sponsor-scale, 1));
+  align-content: stretch;
+}
+.sponsor-wall.multi .sponsor { height: calc(var(--sponsor-h, 24px) * var(--sponsor-scale, 1)); }
+.sponsor-wall.multi[data-partners="1"] .sponsors,
+.sponsor-wall.multi[data-partners="2"] .sponsors,
+.sponsor-wall.multi[data-partners="3"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 36px; }
+.sponsor-wall.multi[data-partners="4"] .sponsors,
+.sponsor-wall.multi[data-partners="5"] .sponsors,
+.sponsor-wall.multi[data-partners="6"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 28px; }
+.sponsor-wall.multi[data-partners="7"] .sponsors,
+.sponsor-wall.multi[data-partners="8"] .sponsors,
+.sponsor-wall.multi[data-partners="9"] .sponsors { grid-template-columns: repeat(4,1fr); --sponsor-h: 24px; }
+.sponsor-wall.multi[data-partners="10"] .sponsors,
+.sponsor-wall.multi[data-partners="11"] .sponsors,
+.sponsor-wall.multi[data-partners="12"] .sponsors { grid-template-columns: repeat(4,1fr); --sponsor-h: 20px; }
+.sponsor-wall.multi[data-partners="13"] .sponsors,
+.sponsor-wall.multi[data-partners="14"] .sponsors,
+.sponsor-wall.multi[data-partners="15"] .sponsors,
+.sponsor-wall.multi[data-partners="16"] .sponsors,
+.sponsor-wall.multi[data-partners="17"] .sponsors,
+.sponsor-wall.multi[data-partners="18"] .sponsors,
+.sponsor-wall.multi[data-partners="19"] .sponsors,
+.sponsor-wall.multi[data-partners="20"] .sponsors,
+.sponsor-wall.multi[data-partners="21"] .sponsors,
+.sponsor-wall.multi[data-partners="22"] .sponsors,
+.sponsor-wall.multi[data-partners="23"] .sponsors,
+.sponsor-wall.multi[data-partners="24"] .sponsors { grid-template-columns: repeat(5,1fr); --sponsor-h: 18px; }
+.sponsor-wall.multi[data-partners="1"],
+.sponsor-wall.multi[data-partners="2"],
+.sponsor-wall.multi[data-partners="3"] { --sp-main-w: 88px; }
+.sponsor-wall.multi[data-partners="4"],
+.sponsor-wall.multi[data-partners="5"],
+.sponsor-wall.multi[data-partners="6"],
+.sponsor-wall.multi[data-partners="7"],
+.sponsor-wall.multi[data-partners="8"],
+.sponsor-wall.multi[data-partners="9"] { --sp-main-w: 76px; }
 
 .sponsor-wall.featured.multi {
   display: grid;
@@ -397,56 +444,65 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
   align-items: stretch;
   width: 100%;
 }
-.sponsor-wall.featured.multi .sponsor-main {
-  height: 100%;
-  min-height: calc(58px * var(--sponsor-scale, 1));
-}
+.sponsor-wall.featured.multi .sponsor-main { height: 100%; min-height: calc(58px * var(--sponsor-scale, 1)); }
 .sponsor-wall.featured.multi .sponsors {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(calc(34px * var(--sponsor-scale, 1)), 1fr));
   gap: calc(3px * var(--sponsor-scale, 1));
   align-content: stretch;
 }
-.sponsor-wall.featured.multi .sponsor {
-  width: 100%;
-  height: calc(var(--sponsor-h, 22px) * var(--sponsor-scale, 1));
-}
+.sponsor-wall.featured.multi .sponsor { width: 100%; height: calc(var(--sponsor-h, 22px) * var(--sponsor-scale, 1)); }
 
-.sponsor-wall.compact .sponsor-main { display: none; }
+/* All alternate layouts hide main sponsor */
+.sponsor-wall.compact .sponsor-main,
+.sponsor-wall.row .sponsor-main,
+.sponsor-wall.centred .sponsor-main,
+.sponsor-wall.left .sponsor-main,
+.sponsor-wall.stacked .sponsor-main,
+.sponsor-wall.no-main .sponsor-main { display: none; }
+
+.sponsor-wall.compact, .sponsor-wall.row, .sponsor-wall.centred,
+.sponsor-wall.left, .sponsor-wall.stacked { width: 100%; display: block; }
+
 .sponsor-wall.compact .sponsors {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(44px * var(--sponsor-scale, 1)), 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: calc(3px * var(--sponsor-scale, 1));
   width: 100%;
 }
-.sponsor-wall.compact .sponsor {
-  height: calc(var(--sponsor-h, 32px) * var(--sponsor-scale, 1));
-  width: 100%;
-}
+.sponsor-wall.compact .sponsor { height: calc(var(--sponsor-h, 24px) * var(--sponsor-scale, 1)); width: 100%; }
+
 .sponsor-wall.row .sponsors {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: stretch;
-  gap: calc(3px * var(--sponsor-scale, 1));
-  width: 100%;
+  display: flex; flex-wrap: nowrap; justify-content: stretch;
+  gap: calc(3px * var(--sponsor-scale, 1)); width: 100%;
 }
-.sponsor-wall.row .sponsor {
-  flex: 1 1 0;
-  min-width: 0;
-  height: calc(var(--sponsor-h, 28px) * var(--sponsor-scale, 1));
+.sponsor-wall.row .sponsor { flex: 1 1 0; min-width: 0; height: calc(var(--sponsor-h, 28px) * var(--sponsor-scale, 1)); }
+
+.sponsor-wall.centred .sponsors,
+.sponsor-wall.left .sponsors {
+  display: flex; flex-wrap: wrap;
+  gap: calc(3px * var(--sponsor-scale, 1)); width: 100%;
 }
-.sponsor-wall.centred .sponsors {
-  display: flex;
-  flex-wrap: wrap;
-  gap: calc(3px * var(--sponsor-scale, 1));
-  width: 100%;
-  justify-content: center;
-}
-.sponsor-wall.centred .sponsor {
+.sponsor-wall.centred .sponsors { justify-content: center; }
+.sponsor-wall.left .sponsors    { justify-content: flex-start; }
+.sponsor-wall.centred .sponsor,
+.sponsor-wall.left .sponsor {
   flex: 0 1 calc((100% - (5 * calc(3px * var(--sponsor-scale, 1)))) / 6);
   min-width: calc(36px * var(--sponsor-scale, 1));
   height: calc(var(--sponsor-h, 24px) * var(--sponsor-scale, 1));
 }
+
+.sponsor-wall.stacked .sponsors { display: grid; grid-template-columns: 1fr; gap: calc(3px * var(--sponsor-scale, 1)); width: 100%; }
+.sponsor-wall.stacked .sponsor  { width: 100%; height: calc(var(--sponsor-h, 30px) * var(--sponsor-scale, 1)); }
+
+/* no-main: same as compact when no featured sponsor */
+.sponsor-wall.featured.no-main .sponsors {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: calc(3px * var(--sponsor-scale, 1));
+  width: 100%;
+}
+.sponsor-wall.featured.no-main .sponsor { width: 100%; height: calc(var(--sponsor-h, 28px) * var(--sponsor-scale, 1)); }
 
 /* ── poster::before applies the background gradient ── */
 .poster::before {

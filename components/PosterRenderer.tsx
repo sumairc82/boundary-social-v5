@@ -259,23 +259,27 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
       <p class="team" style="white-space:pre-line">${esc(s.noticeText)}</p>
     </section>`;
 
-  const buildSponsorContent = () => {
-    const wall = s.sponsors.length
-      ? s.sponsors.slice(0, 4).map(sp =>
-          `<div class="sponsor">${sp.logo ? `<div class="logo-bg" style="background-image:url('${sp.logo}')"></div>` : `<div class="logo-bg text-only">${esc(sp.name)}</div>`}</div>`
-        ).join('')
-      : `<div class="logo-bg text-only" style="min-height:120px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.5">Add your sponsor logo</div>`;
-    return `<section class="partner-card"><div class="sponsors">${wall}</div></section>`;
+  // ── Footer — V1-faithful sponsor wall ──
+  const buildSponsorWall = (sponsors: typeof s.sponsors, layout: string) => {
+    if (!sponsors.length) return '';
+    // V1: showMain is always false — all sponsors go to partners, wall gets no-main class
+    const total = sponsors.length;
+    const wallClass = `${layout} no-main`;
+    const logoBox = (sp: typeof sponsors[0]) => sp.logo
+      ? `<div class="logo-bg" style="background-image:url('${sp.logo}')"></div>`
+      : `<div class="logo-bg text-only">${esc(sp.name)}</div>`;
+    return `<div class="sponsor-wall ${wallClass}" data-count="${total}"><div class="sponsor-main"></div><div class="sponsors">${sponsors.map(sp => `<div class="sponsor">${logoBox(sp)}</div>`).join('')}</div></div>`;
   };
 
-  // ── Footer ──
+  const buildSponsorContent = () => {
+    if (!s.sponsors.length) return `<section class="partner-card"><div class="logo-bg text-only" style="min-height:120px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.5">Add your sponsor logos</div></section>`;
+    return `<section class="partner-card">${buildSponsorWall(s.sponsors, s.sponsorLayout || 'featured')}</section>`;
+  };
+
   const footerHtml = s.sponsors.length && s.template !== 'sponsor' ? `
     <footer class="footer">
       <div class="sponsor-title">Club Partners</div>
-      <div class="sponsor-wall featured" data-count="${s.sponsors.length}">
-        <div class="sponsor-main">${s.sponsors[0].logo ? `<div class="logo-bg" style="background-image:url('${s.sponsors[0].logo}')"></div>` : `<div class="logo-bg text-only">${esc(s.sponsors[0].name)}</div>`}</div>
-        ${s.sponsors.length > 1 ? `<div class="sponsors">${s.sponsors.slice(1).map(sp => `<div class="sponsor">${sp.logo ? `<div class="logo-bg" style="background-image:url('${sp.logo}')"></div>` : `<div class="logo-bg text-only">${esc(sp.name)}</div>`}</div>`).join('')}</div>` : ''}
-      </div>
+      ${buildSponsorWall(s.sponsors, s.sponsorLayout || 'featured')}
     </footer>` : '';
 
   // ── Section ordering ──
