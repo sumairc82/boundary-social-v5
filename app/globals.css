@@ -71,8 +71,14 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
   z-index: 2;
   overflow: hidden;
 }
-/* When header is hidden, collapse the header row */
-.no-header .top { visibility: hidden; height: 0; overflow: hidden; margin: 0; padding: 0; }
+/* Explicit grid placement so hiding header never shifts other rows */
+.poster-inner .top    { grid-row: 1; }
+.poster-inner .content { grid-row: 2; }
+.poster-inner footer  { grid-row: 3; }
+
+/* When header is hidden: collapse its row, hide it, content fills from top */
+.no-header .poster-inner { grid-template-rows: 0px 1fr auto; gap: 0; }
+.no-header .top { visibility: hidden; overflow: hidden; max-height: 0; }
 
 /* Middle section vertical offset */
 .content { transform: translateY(var(--content-y, 0px)); }
