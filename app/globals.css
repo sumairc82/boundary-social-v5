@@ -443,32 +443,41 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 
 .sponsor-wall.featured.multi {
   display: grid;
-  grid-template-columns: calc(var(--sp-main-w, 80px) * var(--sponsor-scale, 1)) 1fr;
+  grid-template-columns: calc(var(--sp-main-w, 120px) * var(--sponsor-scale, 1)) 1fr;
   gap: calc(4px * var(--sponsor-scale, 1));
   align-items: stretch;
   width: 100%;
 }
-.sponsor-wall.featured.multi .sponsor-main { height: 100% !important; min-height: calc(58px * var(--sponsor-scale, 1)); }
+/* Main sponsor fills full height of partner grid */
+.sponsor-wall.featured.multi .sponsor-main {
+  height: 100% !important;
+  min-height: calc(72px * var(--sponsor-scale, 1));
+  position: relative;
+}
+.sponsor-wall.featured.multi .sponsor-main .logo-bg {
+  inset: 3px !important;
+  background-size: 88% !important;
+}
 .sponsor-wall.featured.multi .sponsors {
   display: grid;
   gap: calc(3px * var(--sponsor-scale, 1));
   align-content: stretch;
   width: 100%;
 }
-.sponsor-wall.featured.multi .sponsor { width: 100%; height: calc(var(--sponsor-h, 22px) * var(--sponsor-scale, 1)); }
-/* Use same responsive columns as .multi */
+.sponsor-wall.featured.multi .sponsor { width: 100%; height: calc(var(--sponsor-h, 28px) * var(--sponsor-scale, 1)); }
+/* Responsive partner columns */
 .sponsor-wall.featured.multi[data-partners="1"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="2"] .sponsors,
-.sponsor-wall.featured.multi[data-partners="3"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 36px; }
+.sponsor-wall.featured.multi[data-partners="3"] .sponsors { grid-template-columns: repeat(2,1fr); --sponsor-h: 42px; }
 .sponsor-wall.featured.multi[data-partners="4"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="5"] .sponsors,
-.sponsor-wall.featured.multi[data-partners="6"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 28px; }
+.sponsor-wall.featured.multi[data-partners="6"] .sponsors { grid-template-columns: repeat(2,1fr); --sponsor-h: 34px; }
 .sponsor-wall.featured.multi[data-partners="7"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="8"] .sponsors,
-.sponsor-wall.featured.multi[data-partners="9"] .sponsors { grid-template-columns: repeat(4,1fr); --sponsor-h: 24px; }
+.sponsor-wall.featured.multi[data-partners="9"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 30px; }
 .sponsor-wall.featured.multi[data-partners="10"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="11"] .sponsors,
-.sponsor-wall.featured.multi[data-partners="12"] .sponsors { grid-template-columns: repeat(4,1fr); --sponsor-h: 20px; }
+.sponsor-wall.featured.multi[data-partners="12"] .sponsors { grid-template-columns: repeat(3,1fr); --sponsor-h: 26px; }
 .sponsor-wall.featured.multi[data-partners="13"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="14"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="15"] .sponsors,
@@ -480,16 +489,32 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .sponsor-wall.featured.multi[data-partners="21"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="22"] .sponsors,
 .sponsor-wall.featured.multi[data-partners="23"] .sponsors,
-.sponsor-wall.featured.multi[data-partners="24"] .sponsors { grid-template-columns: repeat(5,1fr); --sponsor-h: 18px; }
+.sponsor-wall.featured.multi[data-partners="24"] .sponsors { grid-template-columns: repeat(4,1fr); --sponsor-h: 20px; }
+/* Main column width by partner count */
 .sponsor-wall.featured.multi[data-partners="1"],
 .sponsor-wall.featured.multi[data-partners="2"],
-.sponsor-wall.featured.multi[data-partners="3"] { --sp-main-w: 88px; }
+.sponsor-wall.featured.multi[data-partners="3"] { --sp-main-w: 130px; }
 .sponsor-wall.featured.multi[data-partners="4"],
 .sponsor-wall.featured.multi[data-partners="5"],
 .sponsor-wall.featured.multi[data-partners="6"],
 .sponsor-wall.featured.multi[data-partners="7"],
 .sponsor-wall.featured.multi[data-partners="8"],
-.sponsor-wall.featured.multi[data-partners="9"] { --sp-main-w: 76px; }
+.sponsor-wall.featured.multi[data-partners="9"] { --sp-main-w: 120px; }
+.sponsor-wall.featured.multi[data-partners="10"],
+.sponsor-wall.featured.multi[data-partners="11"],
+.sponsor-wall.featured.multi[data-partners="12"],
+.sponsor-wall.featured.multi[data-partners="13"],
+.sponsor-wall.featured.multi[data-partners="14"],
+.sponsor-wall.featured.multi[data-partners="15"],
+.sponsor-wall.featured.multi[data-partners="16"],
+.sponsor-wall.featured.multi[data-partners="17"],
+.sponsor-wall.featured.multi[data-partners="18"],
+.sponsor-wall.featured.multi[data-partners="19"],
+.sponsor-wall.featured.multi[data-partners="20"],
+.sponsor-wall.featured.multi[data-partners="21"],
+.sponsor-wall.featured.multi[data-partners="22"],
+.sponsor-wall.featured.multi[data-partners="23"],
+.sponsor-wall.featured.multi[data-partners="24"] { --sp-main-w: 110px; }
 
 /* All alternate layouts hide main sponsor */
 .sponsor-wall.compact .sponsor-main,
@@ -893,11 +918,17 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .detail {
   font-size: calc(10px * var(--meta-scale, 1) * var(--detail-scale, 1));
 }
-/* Row text (fixtures/results) respects meta-scale */
+/* Row text (fixtures/results) respects scale sliders */
 .row-title { font-size: calc(12.5px * var(--fixture-scale, 1)) !important; }
 .row-meta  { font-size: calc(10px * var(--meta-scale, 1)) !important; }
 .view-results .row-title { font-size: calc(16px * var(--fixture-scale, 1)) !important; }
 .view-results .row-meta  { font-size: calc(12px * var(--meta-scale, 1)) !important; }
+.view-results[data-result-count="1"] .row-title { font-size: calc(24px * var(--fixture-scale, 1)) !important; }
+.view-results[data-result-count="1"] .row-meta  { font-size: calc(15px * var(--meta-scale, 1)) !important; }
+.view-results[data-result-count="2"] .row-title { font-size: calc(20px * var(--fixture-scale, 1)) !important; }
+.view-results[data-result-count="2"] .row-meta  { font-size: calc(13px * var(--meta-scale, 1)) !important; }
 /* Sponsor tile height override (only when sponsorHeight > 0) */
 .poster[style*="--sponsor-h-override"] .sponsor { height: var(--sponsor-h-override) !important; }
 .poster[style*="--sponsor-h-override"] .sponsor-main { height: calc(var(--sponsor-h-override) * 1.5) !important; }
+/* Featured multi main sponsor always full height — don't let override break it */
+.poster[style*="--sponsor-h-override"] .sponsor-wall.featured.multi .sponsor-main { height: 100% !important; }
