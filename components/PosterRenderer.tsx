@@ -339,7 +339,7 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
   const innerHtml = `
     <div class="poster-bg-image"></div>
     <div class="poster-inner">
-      ${s.showHeader !== false ? buildHeader() : ''}
+      ${buildHeader()}
       <main class="content">${contentHtml}</main>
       ${footerHtml}
     </div>`;
