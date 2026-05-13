@@ -347,6 +347,41 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
     return `<div class="sponsor-wall ${wallClass}" data-count="${total}"><div class="sponsor-main"></div><div class="sponsors">${sponsors.map(sp => `<div class="sponsor">${logoBox(sp)}</div>`).join('')}</div></div>`;
   };
 
+  const buildSpotlightContent = () => {
+    const count = Math.min(Math.max(s.playerCount || 3, 1), 4);
+    const players = s.players.slice(0, count);
+    const roleIcons: Record<string, string> = {
+      'batsman':'🏏','batting':'🏏','batter':'🏏',
+      'bowler':'⚾','bowling':'⚾',
+      'all-rounder':'⚡','allrounder':'⚡',
+      'wicket-keeper':'🧤','keeper':'🧤','wicketkeeper':'🧤',
+      'captain':'©','fielding':'🌟',
+    };
+    const getIcon = (role: string) => roleIcons[role.toLowerCase().trim()] || '★';
+    const cols = count === 1 ? '1fr' : count === 2 ? '1fr 1fr' : count === 4 ? '1fr 1fr 1fr 1fr' : '1fr 1.1fr 1fr';
+
+    return `<section class="spotlight-wrap" data-count="${count}">
+      <div class="spotlight-title">
+        <div class="spotlight-title-top">${esc(s.titleTop || 'PERFORMANCES OF THE')}</div>
+        <div class="spotlight-title-big">${esc(s.titleBottom || 'WEEKEND')}</div>
+      </div>
+      <div class="spotlight-photos" style="grid-template-columns:${cols}">
+        ${players.map((p, i) => `
+        <div class="spotlight-photo ${count === 3 && i === 1 ? 'spotlight-photo-center' : ''}"
+          style="--photo:${p.photoDataUrl ? `url('${p.photoDataUrl}')` : 'none'};--photo-x:50%;--photo-y:0%"></div>`).join('')}
+      </div>
+      <div class="spotlight-stats" style="grid-template-columns:${cols}">
+        ${players.map(p => `
+        <div class="spotlight-stat">
+          <div class="spotlight-stat-icon">${getIcon(p.role)}</div>
+          <div class="spotlight-stat-name">${esc(p.name)}</div>
+          <div class="spotlight-stat-number">${esc(p.stat)}</div>
+          <div class="spotlight-stat-label">${esc(p.role)}</div>
+        </div>`).join('')}
+      </div>
+    </section>`;
+  };
+
   const buildSponsorContent = () => {
     if (!s.sponsors.length) return `<section class="partner-card"><div class="logo-bg text-only" style="min-height:120px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.5">Add your sponsor logos</div></section>`;
     return `<section class="partner-card">${buildSponsorWall(s.sponsors, s.sponsorLayout || 'featured')}</section>`;
@@ -389,6 +424,8 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
         sections.push(buildSponsorContent());
       } else if (section === 'content') {
         sections.push(buildMatchdayContent());
+      } else if (section === 'spotlight') {
+        sections.push(buildSpotlightContent());
       }
     }
     return sections.join('');

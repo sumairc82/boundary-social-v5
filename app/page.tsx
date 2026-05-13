@@ -130,6 +130,7 @@ function UploadZone({ label, value, onChange }: { label: string; value: string; 
 const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: 'matchday', label: 'Match Day' },
   { id: 'results', label: 'Results' },
+  { id: 'spotlight', label: 'Spotlight ✦' },
   { id: 'performer', label: 'Performer' },
   { id: 'signing', label: 'Signing' },
   { id: 'weekend', label: 'Weekend' },
@@ -220,12 +221,18 @@ function ContentFields({ state, onChange }: { state: AppState; onChange: (p: Par
         </div>
       )}
 
-      {state.template === 'performer' && (
+      {(state.template === 'performer' || state.template === 'spotlight') && (
         <div>
-          <div style={S.secTitle}>Players</div>
+          <div style={S.secTitle}>{state.template === 'spotlight' ? 'Players / Performances' : 'Players'}</div>
+          {state.template === 'spotlight' && (
+            <div style={{ fontSize: 11, color: C.textSec, marginBottom: 10, lineHeight: 1.4 }}>
+              <b style={{ color: C.gold }}>Stat</b> = the big number (e.g. 128*, 5/43)&nbsp;&nbsp;
+              <b style={{ color: C.gold }}>Role</b> = label below (e.g. Not Out, Wickets)
+            </div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
             <span style={{ fontSize: 11, color: C.textSec }}>Count:</span>
-            {[1,2,3,4].map(n => (
+            {(state.template === 'spotlight' ? [2,3,4] : [1,2,3,4]).map(n => (
               <button key={n} onClick={() => onChange({ playerCount: n })} style={{
                 width: 26, height: 26, borderRadius: 5, fontSize: 11, fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'inherit',
@@ -240,9 +247,9 @@ function ContentFields({ state, onChange }: { state: AppState; onChange: (p: Par
               <div style={{ fontSize: 10, color: C.gold, fontWeight: 700, marginBottom: 8 }}>Player {i+1}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <Field label="Name" value={state.players[i]?.name||''} onChange={v => updatePlayer(i,'name',v)} />
-                <Field label="Role" value={state.players[i]?.role||''} onChange={v => updatePlayer(i,'role',v)} />
-                <Field label="Stat / Note" value={state.players[i]?.stat||''} onChange={v => updatePlayer(i,'stat',v)} />
-                <UploadZone label="Photo" value={state.players[i]?.photoDataUrl||''} onChange={v => updatePlayer(i,'photoDataUrl',v)} />
+                <Field label={state.template === 'spotlight' ? 'Label (e.g. Not Out)' : 'Role'} value={state.players[i]?.role||''} onChange={v => updatePlayer(i,'role',v)} />
+                <Field label={state.template === 'spotlight' ? 'Big Stat (e.g. 128*)' : 'Stat / Note'} value={state.players[i]?.stat||''} onChange={v => updatePlayer(i,'stat',v)} />
+                <UploadZone label="Cutout Photo" value={state.players[i]?.photoDataUrl||''} onChange={v => updatePlayer(i,'photoDataUrl',v)} />
               </div>
             </div>
           ))}
@@ -575,16 +582,17 @@ export default function Home() {
         patch.contentX = 0; patch.contentY = 0; patch.contentScale = 100;
         // Per-template default titles
         const titles: Record<string, [string,string]> = {
-          matchday:  ['MATCH',   'DAY'],
-          results:   ['MATCH',   'RESULTS'],
-          performer: ['PLAYER',  'SPOTLIGHT'],
-          signing:   ['NEW',     'SIGNING'],
-          weekend:   ['THIS',    'WEEKEND'],
-          squad:     ['SQUAD',   'ANNOUNCEMENT'],
-          sponsor:   ['THANK',   'OUR SPONSORS'],
-          notice:    ['CLUB',    'NOTICE'],
-          custom:    ['',        ''],
-          monthly:   ['MONTHLY', 'FIXTURES'],
+          matchday:  ['MATCH',              'DAY'],
+          results:   ['MATCH',              'RESULTS'],
+          performer: ['PLAYER',             'SPOTLIGHT'],
+          spotlight: ['PERFORMANCES OF THE','WEEKEND'],
+          signing:   ['NEW',                'SIGNING'],
+          weekend:   ['THIS',               'WEEKEND'],
+          squad:     ['SQUAD',              'ANNOUNCEMENT'],
+          sponsor:   ['THANK',              'OUR SPONSORS'],
+          notice:    ['CLUB',               'NOTICE'],
+          custom:    ['',                   ''],
+          monthly:   ['MONTHLY',            'FIXTURES'],
         };
         const [top, bot] = titles[patch.template] || ['',''];
         patch.titleTop = top;
@@ -656,6 +664,24 @@ export default function Home() {
                       color: state.performerLayout === l.id ? C.goldText : C.btnColor,
                       fontWeight: state.performerLayout === l.id ? 800 : 500,
                     }}>{l.label}</button>
+                  ))}
+                </div>
+              </>
+            )}
+            {state.template === 'spotlight' && (
+              <>
+                <div style={S.divider} />
+                <div style={S.secTitle}>Number of Players</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[2, 3, 4].map(n => (
+                    <button key={n} onClick={() => onChange({ playerCount: n })} style={{
+                      flex: 1, padding: '7px 4px', borderRadius: 6, fontSize: 12,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      background: state.playerCount === n ? C.gold : C.btnBg,
+                      border: `1px solid ${state.playerCount === n ? C.gold : C.btnBorder}`,
+                      color: state.playerCount === n ? C.goldText : C.btnColor,
+                      fontWeight: state.playerCount === n ? 800 : 500,
+                    }}>{n} Players</button>
                   ))}
                 </div>
               </>

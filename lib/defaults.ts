@@ -11,6 +11,7 @@ export const SECTION_ORDERS: Record<string, string[]> = {
   notice:    ['header', 'title', 'notice', 'footer'],
   custom:    ['header', 'title', 'content', 'footer'],
   monthly:   ['header', 'title', 'fixtures', 'footer'],
+  spotlight: ['header', 'spotlight', 'footer'],
 };
 
 export const DEFAULT_STATE: AppState = {

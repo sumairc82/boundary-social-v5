@@ -1,4 +1,4 @@
-export type TemplateId = 'matchday' | 'results' | 'performer' | 'signing' | 'weekend' | 'squad' | 'notice' | 'sponsor' | 'custom' | 'monthly';
+export type TemplateId = 'matchday' | 'results' | 'performer' | 'signing' | 'weekend' | 'squad' | 'notice' | 'sponsor' | 'custom' | 'monthly' | 'spotlight';
 export type StyleId = 'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z'|'aa'|'ab'|'ac'|'ad'|'ae'|'af'|'ag'|'ah'|'ai'|'aj'|'ak'|'al'|'am'|'an'|'ao'|'ap'|'aq'|'ar'|'as'|'at'|'au'|'av'|'aw'|'ax'|'ay'|'az'|'ba'|'bb'|'bc'|'bd'|'be'|'bf'|'bg'|'bh'|'bi'|'bj';
 
 export type PerformerLayout = '4-player' | '3-player' | '2-player' | '2-player-large' | '1-player-hero' | '3-player-showcase' | '2-player-showcase' | '4-player-showcase';

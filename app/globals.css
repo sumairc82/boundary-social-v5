@@ -994,6 +994,143 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .performer-showcase-4 .showcase-photos { grid-template-columns: 1fr 1fr 1fr 1fr; }
 .performer-showcase-4 .showcase-stats  { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
+/* ─── SPOTLIGHT TEMPLATE ─── */
+/* Spotlight uses the full content area as a 3-row layout:
+   title / photos / stats. The poster-inner content cell stretches. */
+.view-spotlight .content {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.spotlight-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Title area ── */
+.spotlight-title {
+  padding: 10px 14px 6px;
+  flex-shrink: 0;
+}
+.spotlight-title-top {
+  font-size: calc(11px * var(--fixture-scale, 1));
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.82);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.spotlight-title-big {
+  font-size: calc(52px * var(--title-scale, 1));
+  font-weight: 1000;
+  text-transform: uppercase;
+  line-height: 0.88;
+  color: var(--user-accent, var(--gold));
+  letter-spacing: -0.02em;
+  font-style: italic;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.5);
+}
+
+/* ── Photos strip ── */
+.spotlight-photos {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+  overflow: hidden;
+  align-items: end;
+}
+.spotlight-photo {
+  height: 100%;
+  background-image: var(--photo, none);
+  background-position: var(--photo-x, 50%) var(--photo-y, 0%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: brightness(var(--media-brightness,1)) contrast(var(--media-contrast,1)) saturate(var(--media-saturate,1));
+  position: relative;
+}
+/* Gradient fade at bottom of photos into stats */
+.spotlight-photo::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 45%;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.72));
+  pointer-events: none;
+}
+/* Thin divider between photos */
+.spotlight-photo + .spotlight-photo {
+  border-left: 1px solid rgba(255,255,255,0.1);
+}
+/* Center player slightly taller when 3 players */
+.spotlight-photo-center {
+  transform: scaleY(1.04);
+  transform-origin: bottom center;
+  z-index: 2;
+}
+
+/* ── Stats row ── */
+.spotlight-stats {
+  display: grid;
+  flex-shrink: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.88) 100%);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 4px 14px;
+}
+.spotlight-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 6px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  gap: 1px;
+}
+.spotlight-stat:last-child { border-right: none; }
+.spotlight-stat-icon {
+  font-size: 15px;
+  margin-bottom: 3px;
+  opacity: 0.8;
+}
+.spotlight-stat-name {
+  font-size: calc(9.5px * var(--fixture-scale, 1));
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+}
+.spotlight-stat-number {
+  font-size: calc(30px * var(--fixture-scale, 1));
+  font-weight: 1000;
+  color: var(--user-accent, var(--gold));
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-style: italic;
+}
+.spotlight-stat-label {
+  font-size: calc(7.5px * var(--meta-scale, 1));
+  font-weight: 800;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.2;
+}
+
+/* Player count variations */
+.spotlight-wrap[data-count="1"] .spotlight-stat-number { font-size: calc(48px * var(--fixture-scale, 1)); }
+.spotlight-wrap[data-count="1"] .spotlight-stat-name   { font-size: calc(14px * var(--fixture-scale, 1)); }
+.spotlight-wrap[data-count="2"] .spotlight-stat-number { font-size: calc(38px * var(--fixture-scale, 1)); }
+.spotlight-wrap[data-count="4"] .spotlight-stat-number { font-size: calc(22px * var(--fixture-scale, 1)); }
+.spotlight-wrap[data-count="4"] .spotlight-stat-name   { font-size: calc(8px  * var(--fixture-scale, 1)); }
+
 /* ── V5 extra adjust controls ── */
 /* Headline block position — only applies when non-zero via CSS var */
 .title-block {
