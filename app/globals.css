@@ -66,8 +66,8 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
   inset: 0;
   display: grid;
   grid-template-rows: 76px 1fr auto;
-  gap: 10px;
-  padding: var(--poster-top-pad, 14px) 20px 0;
+  gap: 0;
+  padding: 0;
   z-index: 2;
   overflow: hidden;
 }
@@ -80,8 +80,8 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .no-header .poster-inner { grid-template-rows: 0px 1fr auto; gap: 0; }
 .no-header .top { visibility: hidden; overflow: hidden; max-height: 0; }
 
-/* Middle section vertical offset */
-.content { transform: translateY(var(--content-y, 0px)); }
+/* Middle section position & scale — independent of headline */
+.content { transform: translate(var(--content-x, 0px), var(--content-y, 0px)) scale(var(--content-scale, 1)); transform-origin: center center; }
 
 .top {
   display: flex;

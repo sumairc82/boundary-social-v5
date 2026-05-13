@@ -87,7 +87,7 @@ export const DEFAULT_STATE: AppState = {
   logoScale: 100,
   logoX: 0,
   logoY: 0,
-  topSpacing: 14,
+  topSpacing: 0,
   bgOpacity: 18,
   bgSize: 100,
   bgPosX: 50,
@@ -106,5 +106,7 @@ export const DEFAULT_STATE: AppState = {
   sponsorNoBg: false,
   showHeader: false,
   contentY: 0,
+  contentX: 0,
+  contentScale: 100,
   ratio: 'story',
 };

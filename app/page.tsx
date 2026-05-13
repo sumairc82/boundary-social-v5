@@ -263,6 +263,36 @@ function ContentFields({ state, onChange }: { state: AppState; onChange: (p: Par
       {(state.template === 'weekend' || state.template === 'monthly') && (
         <div>
           <div style={S.secTitle}>Fixtures (up to 5)</div>
+          {/* Paste importer */}
+          <div style={{ background:'#12141c', border:'1px dashed #fbbf2466', borderRadius:8, padding:10, marginBottom:10 }}>
+            <div style={{ fontSize:11, color:C.gold, fontWeight:700, marginBottom:4 }}>📋 Paste Fixtures</div>
+            <div style={{ fontSize:10, color:C.textSec, marginBottom:6 }}>Paste rows copied from a spreadsheet (Date, Start, Home, Away, Competition, Ground, Team, Division)</div>
+            <textarea rows={4} placeholder={'09 May 2026\t12:00\tBurnham CC\tUxbridge CC\tDivision 1\tThe Ground\t1st XI\tDiv 1'}
+              style={{ ...S.input, resize:'vertical', minHeight:72, fontFamily:'monospace', fontSize:10 }}
+              onPaste={e => {
+                setTimeout(() => {
+                  const text = (e.target as HTMLTextAreaElement).value.trim();
+                  const rows = text.split('\n').filter(r => r.trim());
+                  const parsed = rows.map(row => {
+                    const cols = row.split('\t');
+                    // skip header row
+                    if (cols[0]?.toLowerCase().includes('date')) return null;
+                    const date = cols[0]?.trim() || '';
+                    const time = cols[1]?.trim() || '';
+                    const home = cols[2]?.trim() || '';
+                    const away = cols[3]?.trim() || '';
+                    const team = cols[6]?.trim() || cols[4]?.trim() || '';
+                    const venue = cols[5]?.trim() || '';
+                    return { badge: team, homeTeam: home, awayTeam: away, time, date, venue };
+                  }).filter(Boolean) as AppState['fixtures'];
+                  if (parsed.length) {
+                    onChange({ fixtures: parsed.slice(0, 5) });
+                    (e.target as HTMLTextAreaElement).value = `✓ Imported ${parsed.length} fixture${parsed.length>1?'s':''}`;
+                  }
+                }, 50);
+              }}
+            />
+          </div>
           {[0,1,2,3,4].map(i => (
             <div key={i} style={{ background: C.subCard, border: `1px solid ${C.border}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
               <div style={{ fontSize: 10, color: C.gold, fontWeight: 700, marginBottom: 8 }}>Fixture {i+1}</div>
@@ -326,18 +356,33 @@ function SponsorsPanel({ state, onChange }: { state: AppState; onChange: (p: Par
         <input type="checkbox" checked={state.sponsorNoBg||false} onChange={e => onChange({sponsorNoBg:e.target.checked})} />
         <span style={{ fontSize:11, color:C.textSec }}>Transparent sponsor tiles</span>
       </label>
-      <div style={{ background:'#12141c', border:'1px solid #272b3a', borderRadius:8, padding:10 }}>
-        <div style={{ fontSize:10, color:C.textSec, marginBottom:6 }}>Bulk add sponsors (one name per line)</div>
-        <textarea placeholder={"Main Sponsor Ltd\nKit Partner Co"} rows={3}
-          style={{ ...S.input, resize:'vertical', minHeight:64, marginBottom:6 }}
-          onBlur={e => {
-            const lines = e.target.value.split('\n').filter(l => l.trim());
-            if (!lines.length) return;
-            const newSponsors = lines.map(name => ({ name: name.trim(), logo: '' }));
-            onChange({ sponsors: [...state.sponsors, ...newSponsors] });
-            e.target.value = '';
-          }}
-        />
+      {/* Multi-file logo upload */}
+      <div style={{ background:'#12141c', border:'1px dashed #fbbf2466', borderRadius:8, padding:12, textAlign:'center' }}>
+        <div style={{ fontSize:11, color:C.gold, fontWeight:700, marginBottom:4 }}>Upload Multiple Sponsor Logos</div>
+        <div style={{ fontSize:10, color:C.textSec, marginBottom:8 }}>Select multiple image files at once</div>
+        <label style={{ cursor:'pointer', display:'inline-block', background:'#21253a', border:'1px solid #fbbf24', borderRadius:6, padding:'6px 16px', fontSize:11, color:C.gold, fontWeight:700 }}>
+          Choose Files
+          <input type="file" accept="image/*" multiple style={{ display:'none' }}
+            onChange={e => {
+              const files = Array.from(e.target.files || []);
+              if (!files.length) return;
+              const newSponsors: { name: string; logo: string }[] = [];
+              let loaded = 0;
+              files.forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                  newSponsors[idx] = { name: file.name.replace(/\.[^.]+$/, ''), logo: ev.target?.result as string };
+                  loaded++;
+                  if (loaded === files.length) {
+                    onChange({ sponsors: [...state.sponsors, ...newSponsors.filter(Boolean)] });
+                  }
+                };
+                reader.readAsDataURL(file);
+              });
+              e.target.value = '';
+            }}
+          />
+        </label>
       </div>
       {state.sponsors.map((sp, i) => (
         <div key={i} style={{ background: C.subCard, border: `1px solid ${C.border}`, borderRadius: 8, padding: 10 }}>
@@ -366,7 +411,8 @@ function AdjustPanelContent({ state, onChange }: { state: AppState; onChange: (p
   const resetAll = () => onChange({
     titleScale:100, titleTopScale:100, titleBotScale:100, headlineX:0, headlineY:0,
     headlineSpacing:100, detailScale:100, metaScale:100, fixtureScale:100, badgeScale:100,
-    sponsorScale:100, logoScale:100, logoX:0, logoY:0, topSpacing:14,
+    sponsorScale:100, logoScale:100, logoX:0, logoY:0, topSpacing:0,
+    contentY:0, contentX:0, contentScale:100,
   });
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:10, padding:'12px 12px' }}>
@@ -405,11 +451,13 @@ function AdjustPanelContent({ state, onChange }: { state: AppState; onChange: (p
       )}
 
       <div style={S.divider} />
-      <div style={S.secTitle}>Content Section Position</div>
-      <SliderField label="Middle Section Up / Down" value={state.contentY ?? 0} min={-300} max={300} onChange={v => onChange({contentY:v})} />
-      <button onClick={() => onChange({contentY:0})}
+      <div style={S.secTitle}>Content Section Position &amp; Size</div>
+      <SliderField label="Up / Down" value={state.contentY ?? 0} min={-300} max={300} onChange={v => onChange({contentY:v})} />
+      <SliderField label="Left / Right" value={state.contentX ?? 0} min={-300} max={300} onChange={v => onChange({contentX:v})} />
+      <SliderField label="Scale" value={state.contentScale ?? 100} min={50} max={200} onChange={v => onChange({contentScale:v})} />
+      <button onClick={() => onChange({contentY:0, contentX:0, contentScale:100})}
         style={{ fontSize:10, color:'#fbbf24', background:'#1e2235', border:'1px solid #2d3248', borderRadius:5, padding:'4px 8px', cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-start' }}>
-        ↺ Reset
+        ↺ Reset Content
       </button>
 
       <div style={S.divider} />

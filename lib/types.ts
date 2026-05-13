@@ -77,5 +77,7 @@ export interface AppState {
   sponsorNoBg: boolean;
   showHeader: boolean;
   contentY: number;       // middle section vertical offset -300 to 300
+  contentX: number;       // middle section horizontal offset -300 to 300
+  contentScale: number;   // middle section scale 50-200
   ratio: 'story' | 'fourfive' | 'square' | 'landscape';
 }
