@@ -3,6 +3,16 @@ export type StyleId = 'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o
 
 export type PerformerLayout = '4-player' | '3-player' | '2-player' | '2-player-large' | '1-player-hero';
 
+export interface ImageLayer {
+  id: string;
+  dataUrl: string;
+  x: number;      // % of poster width
+  y: number;      // % of poster height
+  scale: number;  // 10-300
+  zIndex: number;
+  flipH: boolean;
+}
+
 export interface AppState {
   template: TemplateId;
   style: StyleId;
@@ -77,7 +87,8 @@ export interface AppState {
   sponsorNoBg: boolean;
   showHeader: boolean;
   contentY: number;       // middle section vertical offset -300 to 300
-  contentX: number;       // middle section horizontal offset -300 to 300
-  contentScale: number;   // middle section scale 50-200
+  contentX: number;
+  contentScale: number;
+  imageLayers: ImageLayer[];
   ratio: 'story' | 'fourfive' | 'square' | 'landscape';
 }

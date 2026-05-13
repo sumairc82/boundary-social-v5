@@ -80,8 +80,11 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
 .no-header .poster-inner { grid-template-rows: 0px 1fr auto; gap: 0; }
 .no-header .top { visibility: hidden; overflow: hidden; max-height: 0; }
 
-/* Middle section position & scale — independent of headline */
-.content { transform: translate(var(--content-x, 0px), var(--content-y, 0px)) scale(var(--content-scale, 1)); transform-origin: center center; }
+/* Data section (cards/list/grid) moves independently of headline title-block */
+.list, .card, .feature-grid, .squad-layout, .partner-card {
+  transform: translate(var(--content-x, 0px), var(--content-y, 0px)) scale(var(--content-scale, 1));
+  transform-origin: center center;
+}
 
 .top {
   display: flex;

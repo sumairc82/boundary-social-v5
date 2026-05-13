@@ -108,5 +108,6 @@ export const DEFAULT_STATE: AppState = {
   contentY: 0,
   contentX: 0,
   contentScale: 100,
+  imageLayers: [],
   ratio: 'story',
 };

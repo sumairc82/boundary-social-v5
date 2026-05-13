@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { AppState, TemplateId } from '@/lib/types';
+import { AppState, TemplateId, ImageLayer } from '@/lib/types';
 import { DEFAULT_STATE, SECTION_ORDERS } from '@/lib/defaults';
 import { saveState, loadState } from '@/lib/storage';
 import { exportPoster } from '@/lib/export';
@@ -9,6 +9,7 @@ import { PALETTES } from '@/lib/palettes';
 import { BG_STYLES } from '@/lib/bgStyles';
 import IconSidebar, { SidebarPanel } from '@/components/IconSidebar';
 import LayersPanel from '@/components/LayersPanel';
+const ImageLayersOverlay = dynamic(() => import('@/components/ImageLayersOverlay'), { ssr: false });
 
 const PosterRenderer = dynamic(() => import('@/components/PosterRenderer'), { ssr: false });
 const DesignStudio = dynamic(() => import('@/components/DesignStudio'), { ssr: false });
@@ -555,10 +556,24 @@ export default function Home() {
       // When template changes, reset sectionOrder AND position overrides
       if (patch.template && patch.template !== prev.template) {
         patch.sectionOrder = SECTION_ORDERS[patch.template] || [];
-        // Reset headline position so it doesn't carry over and hide under header
-        patch.headlineX = 0;
-        patch.headlineY = 0;
-        patch.headlineSpacing = 100;
+        patch.headlineX = 0; patch.headlineY = 0; patch.headlineSpacing = 100;
+        patch.contentX = 0; patch.contentY = 0; patch.contentScale = 100;
+        // Per-template default titles
+        const titles: Record<string, [string,string]> = {
+          matchday:  ['MATCH',   'DAY'],
+          results:   ['MATCH',   'RESULTS'],
+          performer: ['PLAYER',  'SPOTLIGHT'],
+          signing:   ['NEW',     'SIGNING'],
+          weekend:   ['THIS',    'WEEKEND'],
+          squad:     ['SQUAD',   'ANNOUNCEMENT'],
+          sponsor:   ['THANK',   'OUR SPONSORS'],
+          notice:    ['CLUB',    'NOTICE'],
+          custom:    ['',        ''],
+          monthly:   ['MONTHLY', 'FIXTURES'],
+        };
+        const [top, bot] = titles[patch.template] || ['',''];
+        patch.titleTop = top;
+        patch.titleBottom = bot;
       }
       const next = { ...prev, ...patch };
       saveState(next);
@@ -646,7 +661,63 @@ export default function Home() {
 
       case 'content':
         return (
-          <div style={{ padding: '12px 12px' }}>
+          <div style={{ padding: '12px 12px', display:'flex', flexDirection:'column', gap:10 }}>
+            {/* Image layers */}
+            <div style={S.secTitle}>Image Layers</div>
+            <div style={{ background:'#12141c', border:'1px dashed #fbbf2466', borderRadius:8, padding:12, textAlign:'center' }}>
+              <div style={{ fontSize:11, color:C.gold, fontWeight:700, marginBottom:4 }}>Add Images to Poster</div>
+              <div style={{ fontSize:10, color:C.textSec, marginBottom:8 }}>PNG with transparent background recommended</div>
+              <label style={{ cursor:'pointer', display:'inline-block', background:'#21253a', border:'1px solid #fbbf24', borderRadius:6, padding:'6px 16px', fontSize:11, color:C.gold, fontWeight:700 }}>
+                + Add Image(s)
+                <input type="file" accept="image/*" multiple style={{ display:'none' }}
+                  onChange={e => {
+                    const files = Array.from(e.target.files || []);
+                    if (!files.length) return;
+                    const existing = state.imageLayers || [];
+                    const newLayers: ImageLayer[] = [];
+                    let loaded = 0;
+                    files.forEach((file, idx) => {
+                      const reader = new FileReader();
+                      reader.onload = ev => {
+                        const maxZ = existing.length ? Math.max(...existing.map(l => l.zIndex)) : 0;
+                        newLayers[idx] = {
+                          id: `img-${Date.now()}-${idx}`,
+                          dataUrl: ev.target?.result as string,
+                          x: 50, y: 50,
+                          scale: 60,
+                          zIndex: maxZ + idx + 1,
+                          flipH: false,
+                        };
+                        loaded++;
+                        if (loaded === files.length) {
+                          onChange({ imageLayers: [...existing, ...newLayers.filter(Boolean)] });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+            {(state.imageLayers?.length > 0) && (
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {state.imageLayers.map((layer, i) => (
+                  <div key={layer.id} style={{ background:C.subCard, border:`1px solid ${C.border}`, borderRadius:7, padding:'6px 8px', display:'flex', alignItems:'center', gap:8 }}>
+                    <img src={layer.dataUrl} style={{ width:28, height:28, objectFit:'contain', borderRadius:3 }} />
+                    <span style={{ flex:1, fontSize:10, color:C.textSec }}>Image {i+1}</span>
+                    <span style={{ fontSize:10, color:'#5a6a8a' }}>z:{layer.zIndex}</span>
+                    <button onClick={() => onChange({ imageLayers: (state.imageLayers||[]).filter(l => l.id !== layer.id) })}
+                      style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, color:'#ef4444', padding:'2px' }}>✕</button>
+                  </div>
+                ))}
+                <button onClick={() => onChange({ imageLayers: [] })}
+                  style={{ fontSize:10, color:'#ef4444', background:'none', border:'none', cursor:'pointer', textAlign:'left' }}>
+                  Clear all images
+                </button>
+              </div>
+            )}
+            <div style={S.divider} />
             <ContentFields state={state} onChange={onChange} />
           </div>
         );
@@ -1108,6 +1179,17 @@ export default function Home() {
               transform: `scale(${zoom})`, transformOrigin: 'top left', transition: 'transform 0.15s ease',
             }}>
               <PosterRenderer ref={posterRef} state={state} />
+              {/* Image layers overlay — always visible */}
+              {(state.imageLayers?.length > 0) && (
+                <div style={{ position:'absolute', inset:0, zIndex:30, pointerEvents:'auto' }}>
+                  <ImageLayersOverlay
+                    layers={state.imageLayers}
+                    onChange={layers => onChange({ imageLayers: layers })}
+                    posterRef={posterRef}
+                    zoom={zoom}
+                  />
+                </div>
+              )}
               {studioMode && (
                 <div style={{ position:'absolute', inset:0, zIndex:40, pointerEvents:'none' }}>
                   <DesignStudio active={studioMode} posterRef={posterRef} zoom={zoom} />
