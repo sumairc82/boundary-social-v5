@@ -21,10 +21,26 @@ interface Props {
   zoom?: number;
 }
 
-const SKIP_CLASSES = ['poster', 'poster-inner', 'poster-bg-image'];
-const TARGET_CLASSES = ['top', 'title-block', 'card', 'list', 'feature-grid', 'player-card',
-  'partner-card', 'footer', 'squad-layout', 'title', 'team', 'club', 'chips', 'crest',
-  'crest-lockup', 'content'];
+const SKIP_CLASSES = ['poster', 'poster-bg-image'];
+// 'content' = the <main> wrapper; 'top' = header bar; title-block, card, list etc = sections
+const TARGET_CLASSES = [
+  'content',       // entire middle section (title + fixtures/results/players)
+  'top',           // header bar
+  'title-block',   // headline block
+  'card',          // matchday card
+  'list',          // fixture/result list
+  'feature-grid',  // performer grid
+  'player-card',   // individual player card
+  'partner-card',
+  'footer',
+  'squad-layout',
+  'title',
+  'team',
+  'club',
+  'chips',
+  'crest',
+  'crest-lockup',
+];
 
 // 8 resize handle positions
 interface HandleDef {

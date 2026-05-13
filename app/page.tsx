@@ -496,9 +496,13 @@ export default function Home() {
 
   const onChange = useCallback((patch: Partial<AppState>) => {
     setState(prev => {
-      // When template changes, reset sectionOrder
+      // When template changes, reset sectionOrder AND position overrides
       if (patch.template && patch.template !== prev.template) {
         patch.sectionOrder = SECTION_ORDERS[patch.template] || [];
+        // Reset headline position so it doesn't carry over and hide under header
+        patch.headlineX = 0;
+        patch.headlineY = 0;
+        patch.headlineSpacing = 100;
       }
       const next = { ...prev, ...patch };
       saveState(next);
@@ -869,6 +873,20 @@ export default function Home() {
           })()}
         </div>
         <div style={{ marginLeft:'auto', display:'flex', gap:8, alignItems:'center' }}>
+          {/* Header toggle — quick access */}
+          <button
+            title={state.showHeader !== false ? 'Hide club header bar' : 'Show club header bar'}
+            onClick={() => onChange({ showHeader: state.showHeader === false ? true : false })}
+            style={{
+              fontSize:11, padding:'5px 10px',
+              background: state.showHeader !== false ? 'transparent' : '#21253a',
+              color: state.showHeader !== false ? '#9099b5' : C.gold,
+              border: `1px solid ${state.showHeader !== false ? '#2d3248' : C.gold}`,
+              borderRadius:20, cursor:'pointer', fontFamily:'inherit',
+              display:'flex', alignItems:'center', gap:5,
+            }}>
+            {state.showHeader !== false ? '⊟ Header' : '⊞ Header'}
+          </button>
           {/* Reset Poster to Defaults */}
           <button
             title="Reset poster to default state"

@@ -68,6 +68,7 @@ const PosterRenderer = forwardRef<HTMLDivElement, Props>(({ state }, ref) => {
   if (s.logoNoBg) posterClassParts.push('logo-no-bg');
   if (s.sponsorNoBg) posterClassParts.push('sponsor-no-bg');
   if (s.template === 'performer') posterClassParts.push(layoutDataAttr);
+  if (s.showHeader === false) posterClassParts.push('no-header');
   const posterClass = posterClassParts.join(' ');
 
   // player count derived from layout

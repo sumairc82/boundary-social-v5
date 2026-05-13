@@ -71,6 +71,13 @@ html, body, #__next { height: 100%; margin: 0; padding: 0; }
   z-index: 2;
   overflow: hidden;
 }
+/* When header is hidden, content fills from top */
+.no-header .poster-inner {
+  grid-template-rows: 0px 1fr auto;
+  gap: 0;
+  padding-top: var(--poster-top-pad, 14px);
+}
+.no-header .top { display: none; }
 
 .top {
   display: flex;
